@@ -12,6 +12,6 @@ I am a PhD candidate in the [Department of Geography and Environment](http://www
 
 I also [build](http://tourdefarmsbuffalo.org/#Map) [web maps](http://www.nydropboxes.org) and support [Arsenal FC](http://www.arsenal.com).
 
-<a href="http://github.com/jtravisnorton" target="_blank"><i class="fa fa-github"></i></a>
+###Find me @jtravisnorton: <a href="http://github.com/jtravisnorton" target="_blank"><i class="fa fa-github"></i></a>
 <a href="https://twitter.com/jtravisnorton" target="_blank"><i class="fa fa-twitter"></i></a>
 <a href="https://www.linkedin.com/pub/travis-norton/13/607/88a" target="_blank"><i class="fa fa-linkedin"></i></a>
