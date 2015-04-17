@@ -3,8 +3,8 @@ layout: post
 title: About me
 ---
 
-[CV] (https://drive.google.com/file/d/0BxfBZhOp_a_AMHJIWFQ2R1d0U2s/view?usp=sharing)
-[One-page resume] (https://drive.google.com/file/d/0BxfBZhOp_a_ASEpXUjdxQzhnUlE/view?usp=sharing)
+* [CV] (https://drive.google.com/file/d/0BxfBZhOp_a_AMHJIWFQ2R1d0U2s/view?usp=sharing)
+* [One-page resume] (https://drive.google.com/file/d/0BxfBZhOp_a_ASEpXUjdxQzhnUlE/view?usp=sharing)
 
 ### Built on Poole
 
