@@ -11,3 +11,7 @@ I am a PhD candidate in the [Department of Geography and Environment](http://www
 * The effectiveness of programs and policies aimed at **promoting the shift towards active travel modes**
 
 I also [build](http://tourdefarmsbuffalo.org/#Map) [web maps](http://www.nydropboxes.org) and support [Arsenal FC](http://www.arsenal.com).
+
+<a class="sidebar-nav-item" href="http://github.com/jtravisnorton" target="_blank"><i class="fa fa-github"></i></a>
+    <a class="sidebar-nav-item" href="https://twitter.com/jtravisnorton" target="_blank"><i class="fa fa-twitter"></i></a>
+    <a class="sidebar-nav-item" href="https://www.linkedin.com/pub/travis-norton/13/607/88a" target="_blank"><i class="fa fa-linkedin"></i></a>
