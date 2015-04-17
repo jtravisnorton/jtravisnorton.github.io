@@ -10,7 +10,7 @@ I am a PhD candidate in the [Department of Geography and Environment](http://www
 * Using **GPS, accelerometer, smartphone, and mobile devices** to study **travel behavior**
 * The effectiveness of programs and policies aimed at **promoting the shift towards active travel modes** 
 
-Find my [CV](https://drive.google.com/file/d/0BxfBZhOp_a_AMHJIWFQ2R1d0U2s/view?usp=sharing) / [Resume](https://drive.google.com/file/d/0BxfBZhOp_a_ASEpXUjdxQzhnUlE/view?usp=sharing)
+For my most up-to-date reference list: [CV](https://drive.google.com/file/d/0BxfBZhOp_a_AMHJIWFQ2R1d0U2s/view?usp=sharing) / [Resume](https://drive.google.com/file/d/0BxfBZhOp_a_ASEpXUjdxQzhnUlE/view?usp=sharing)
 
 I also [build](http://tourdefarmsbuffalo.org/#Map) [web maps](http://www.nydropboxes.org) and support [Arsenal FC](http://www.arsenal.com).
 
