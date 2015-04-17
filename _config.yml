@@ -13,7 +13,7 @@ title:               Travis Norton
 tagline:             ''
 description:         'Urban planning, transport geography, and GIS'
 url:                 http://jtravisnorton.com
-baseurl:             /about
+baseurl:             /
 paginate:            5
 
 # About/contact
