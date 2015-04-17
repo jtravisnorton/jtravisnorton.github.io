@@ -3,8 +3,6 @@ layout: default
 title: Home
 ---
 
-##Welcome to my site
-
 I am a PhD candidate in the [Department of Geography and Environment](http://www.abdn.ac.uk/geosciences/departments/geography-environment/) at the [University of Aberdeen](http://www.abdn.ac.uk/). My current research interest include:
 
 * Connections between the **built environment and health**, particularly environmental factors that influence physical activity and active mode choice
