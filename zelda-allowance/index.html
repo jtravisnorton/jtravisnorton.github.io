@@ -563,7 +563,8 @@ code {
 
 <script>
 // ── STATE ──────────────────────────────────────────────────
-let scriptUrl = localStorage.getItem('zelda_allowance_script_url') || '';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsMclqgQw3jTkw7F6g7NoHtcuvMM5pBU8rSwnDLgeC75he34z6G0RIEYt3Ku1eLnHhbA/exec';
+let scriptUrl = localStorage.getItem('zelda_allowance_script_url') || DEFAULT_SCRIPT_URL;
 let kids = [];
 let transactions = [];
 let selectedKid = null;
