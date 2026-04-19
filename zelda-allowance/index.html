@@ -237,22 +237,42 @@ main { padding: 20px 16px; max-width: 960px; margin: 0 auto; }
   transition: all 0.2s;
 }
 .preset-btn:hover { border-color: var(--gold); color: var(--gold); }
-.tx-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.tx-actions { display: flex; gap: 10px; flex-wrap: wrap; flex-direction: column; }
 .btn-submit {
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #2a4a1a, #1a3a0a);
-  border: 2px solid var(--gold);
-  color: var(--gold);
+  width: 100%;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #1a4a1a, #0a3a0a);
+  border: 3px solid var(--green-r);
+  color: var(--green-r);
   font-family: inherit;
-  font-size: 9px;
+  font-size: 11px;
   cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s;
+  border-radius: 6px;
+  transition: all 0.15s;
   letter-spacing: 1px;
 }
-.btn-submit:hover { background: linear-gradient(135deg, #3a6a2a, #2a5a1a); box-shadow: 0 0 12px rgba(255,215,0,0.3); }
+.btn-submit.spend-mode {
+  background: linear-gradient(135deg, #4a1a1a, #3a0a0a);
+  border-color: var(--red-r);
+  color: var(--red-r);
+}
+.btn-submit:hover:not(:disabled) { filter: brightness(1.2); box-shadow: 0 0 16px rgba(46,204,113,0.4); }
+.btn-submit.spend-mode:hover:not(:disabled) { box-shadow: 0 0 16px rgba(231,76,60,0.4); }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-submit .btn-inner { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-spinner {
+  width: 14px; height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: none;
+  flex-shrink: 0;
+}
+.btn-submit.loading .btn-spinner { display: block; }
 .btn-goal {
-  padding: 12px 20px;
+  width: 100%;
+  padding: 10px;
   background: none;
   border: 1px solid var(--border);
   color: #889;
@@ -263,6 +283,8 @@ main { padding: 20px 16px; max-width: 960px; margin: 0 auto; }
   transition: all 0.2s;
 }
 .btn-goal:hover { border-color: var(--purple-r); color: var(--purple-r); }
+.log-entry.pending { opacity: 0.55; }
+.log-entry.pending .log-desc::after { content: ' (saving...)'; color: #556; }
 
 /* ── QUEST LOG ── */
 #quest-log { margin-bottom: 24px; }
@@ -515,7 +537,7 @@ input, select, textarea {
       <button class="toggle-btn spend" id="btn-spend" onclick="setMode('spend')">▼ SPEND</button>
     </div>
     <div class="tx-fields">
-      <input type="number" id="tx-amount" placeholder="Amount ($)" min="0.01" step="0.01" inputmode="numeric" pattern="[0-9]*">
+      <input type="number" id="tx-amount" placeholder="Amount ($)" min="0.01" step="0.01" inputmode="numeric" pattern="[0-9]*" oninput="updateSubmitLabel()">
       <input type="text" id="tx-desc" placeholder="Description...">
     </div>
     <div class="presets">
@@ -527,8 +549,13 @@ input, select, textarea {
       <button class="preset-btn" onclick="setPreset(0,'Gift')">🎁 Gift...</button>
     </div>
     <div class="tx-actions">
-      <button class="btn-submit" onclick="submitTransaction()">▶ OPEN CHEST</button>
-      <button class="btn-goal" onclick="openGoal()">♥ SET GOAL</button>
+      <button class="btn-submit" id="btn-submit" onclick="submitTransaction()">
+        <div class="btn-inner">
+          <div class="btn-spinner"></div>
+          <span id="btn-submit-label">▲ ADD RUPEES</span>
+        </div>
+      </button>
+      <button class="btn-goal" onclick="openGoal()">♥ SET SAVINGS GOAL</button>
     </div>
   </div>
 
@@ -774,7 +801,7 @@ function renderLog() {
     const amt = parseFloat(tx.amount);
     const earn = amt >= 0;
     const date = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString() : '';
-    return `<li class="log-entry">
+    return `<li class="log-entry${tx.pending ? ' pending' : ''}">
       <span class="log-amount ${earn ? 'earn' : 'spend'}">${earn ? '+' : ''}$${Math.abs(amt).toFixed(2)}</span>
       <span class="log-kid">${escHtml(tx.kid)}</span>
       <span class="log-desc">${escHtml(tx.description || '')}</span>
@@ -804,12 +831,27 @@ function setMode(mode) {
   txMode = mode;
   document.getElementById('btn-earn').classList.toggle('active', mode === 'earn');
   document.getElementById('btn-spend').classList.toggle('active', mode === 'spend');
+  updateSubmitLabel();
 }
 
 function setPreset(amount, desc) {
   document.getElementById('tx-amount').value = amount || '';
   document.getElementById('tx-desc').value = desc;
   if (amount === 0) document.getElementById('tx-amount').focus();
+  updateSubmitLabel();
+}
+
+function updateSubmitLabel() {
+  const btn = document.getElementById('btn-submit');
+  const label = document.getElementById('btn-submit-label');
+  const amt = parseFloat(document.getElementById('tx-amount').value);
+  const earn = txMode === 'earn';
+  btn.classList.toggle('spend-mode', !earn);
+  if (amt > 0) {
+    label.textContent = earn ? `▲ ADD $${amt.toFixed(2)}` : `▼ SPEND $${amt.toFixed(2)}`;
+  } else {
+    label.textContent = earn ? '▲ ADD RUPEES' : '▼ SPEND RUPEES';
+  }
 }
 
 async function submitTransaction() {
@@ -817,32 +859,44 @@ async function submitTransaction() {
   const amtRaw = parseFloat(document.getElementById('tx-amount').value);
   const desc = document.getElementById('tx-desc').value.trim() || (txMode === 'earn' ? 'Earned' : 'Spent');
   if (!amtRaw || amtRaw <= 0) { showError('Enter a valid amount.'); return; }
+  hideError();
 
   const amount = txMode === 'spend' ? -amtRaw : amtRaw;
-  showSpinner(true);
-  hideError();
+  const earn = txMode === 'earn';
+
+  // Optimistic update — show change immediately
+  const prevBalance = selectedKid.balance;
+  selectedKid.balance = Math.round((selectedKid.balance + amount) * 100) / 100;
+  const pendingTx = { timestamp: new Date(), kid: selectedKid.name, amount, description: desc, pending: true };
+  transactions.unshift(pendingTx);
+  renderKids();
+  renderLog();
+
+  // Lock UI
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  document.getElementById('tx-amount').value = '';
+  document.getElementById('tx-desc').value = '';
+  updateSubmitLabel();
+
+  if (earn) { playEarn(); notify(`${selectedKid.name} found $${amtRaw.toFixed(2)}! ◆`); }
+  else       { playSpend(); notify(`${selectedKid.name} spent $${amtRaw.toFixed(2)} ◆`); }
+
   try {
-    const res = await api({
-      action: 'addTransaction',
-      kid: selectedKid.name,
-      amount: amount,
-      description: desc,
-    });
+    const res = await api({ action: 'addTransaction', kid: selectedKid.name, amount, description: desc });
     if (res.error) throw new Error(res.error);
-    if (txMode === 'earn') {
-      playEarn();
-      notify(`${selectedKid.name} found $${amtRaw.toFixed(2)}! ◆`);
-    } else {
-      playSpend();
-      notify(`${selectedKid.name} spent $${amtRaw.toFixed(2)} ◆`);
-    }
-    document.getElementById('tx-amount').value = '';
-    document.getElementById('tx-desc').value = '';
-    await loadData();
+    await loadData(); // confirm from server
   } catch (e) {
+    // Roll back
+    selectedKid.balance = prevBalance;
+    transactions.shift();
+    renderKids();
+    renderLog();
     showError(e.message);
   } finally {
-    showSpinner(false);
+    btn.disabled = false;
+    btn.classList.remove('loading');
   }
 }
 
