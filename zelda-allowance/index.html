@@ -515,7 +515,7 @@ input, select, textarea {
       <button class="toggle-btn spend" id="btn-spend" onclick="setMode('spend')">▼ SPEND</button>
     </div>
     <div class="tx-fields">
-      <input type="number" id="tx-amount" placeholder="Amount ($)" min="0.01" step="0.01">
+      <input type="number" id="tx-amount" placeholder="Amount ($)" min="0.01" step="0.01" inputmode="numeric" pattern="[0-9]*">
       <input type="text" id="tx-desc" placeholder="Description...">
     </div>
     <div class="presets">
@@ -546,7 +546,8 @@ input, select, textarea {
   <div class="modal" style="max-width:320px;text-align:center">
     <h2>🔐 PARENT MODE</h2>
     <p style="font-size:7px;color:#889;margin:12px 0">Enter your PIN to unlock</p>
-    <input type="password" id="pin-input" placeholder="PIN" maxlength="8"
+    <input type="tel" id="pin-input" placeholder="PIN" maxlength="8"
+      inputmode="numeric" pattern="[0-9]*"
       style="text-align:center;letter-spacing:4px" onkeydown="if(event.key==='Enter')submitPin()">
     <div id="pin-error" style="color:var(--red-r);font-size:7px;margin-top:8px;display:none">Wrong PIN!</div>
     <div class="modal-actions">
@@ -575,7 +576,7 @@ input, select, textarea {
     <label>Web App URL</label>
     <input type="url" id="script-url-input" placeholder="https://script.google.com/macros/s/.../exec">
     <label>Parent PIN (used to unlock editing)</label>
-    <input type="password" id="pin-setting-input" placeholder="Enter new PIN (leave blank to keep current)" maxlength="8">
+    <input type="tel" id="pin-setting-input" placeholder="Enter new PIN (leave blank to keep current)" maxlength="8" inputmode="numeric" pattern="[0-9]*">
     <div class="modal-actions">
       <button class="btn-primary" onclick="saveSetup()">SAVE &amp; CONNECT</button>
       <button class="btn-secondary" onclick="closeSetup()">CANCEL</button>
@@ -611,7 +612,7 @@ input, select, textarea {
     <label>What are you saving for?</label>
     <input type="text" id="goal-name" placeholder="e.g. Nintendo Switch, LEGO set...">
     <label>Goal Amount ($)</label>
-    <input type="number" id="goal-amount" placeholder="e.g. 299" min="1" step="1">
+    <input type="number" id="goal-amount" placeholder="e.g. 299" min="1" step="1" inputmode="numeric" pattern="[0-9]*">
     <div class="modal-actions">
       <button class="btn-primary" onclick="submitGoal()">SET GOAL</button>
       <button class="btn-secondary" onclick="closeGoal()">CANCEL</button>
