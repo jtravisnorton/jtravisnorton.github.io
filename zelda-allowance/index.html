@@ -436,16 +436,56 @@ code {
 .color-swatch:hover { transform: scale(1.1); }
 .color-swatch.selected { border-color: #fff; }
 
+/* ── PIN / LOCK ── */
+.lock-btn {
+  position: absolute;
+  top: 20px;
+  left: 16px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--gold);
+  font-family: inherit;
+  font-size: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.lock-btn:hover { background: var(--border); }
+.kid-mode-banner {
+  display: none;
+  background: rgba(46,204,113,0.1);
+  border: 1px solid var(--green-r);
+  color: var(--green-r);
+  text-align: center;
+  padding: 8px;
+  font-size: 7px;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+}
+body.locked .kid-mode-banner { display: block; }
+body.locked .gear-btn { display: none; }
+body.locked #tx-panel { display: none !important; }
+body.locked .add-kid-card { display: none; }
+
 @media (max-width: 480px) {
   header h1 { font-size: 13px; }
   .kid-card { min-width: 150px; }
   .balance-number { font-size: 18px !important; }
+}
+
+/* Prevent iOS zoom on input focus — must be 16px minimum */
+input, select, textarea {
+  font-size: 16px !important;
 }
 </style>
 </head>
 <body>
 
 <header>
+  <button class="lock-btn" id="lock-btn" onclick="toggleLock()">🔒 KID MODE</button>
   <span class="triforce">△<br>△△</span>
   <h1>HYRULEAN TREASURY</h1>
   <p>It's dangerous to go broke!</p>
@@ -455,6 +495,7 @@ code {
 <div id="notif"></div>
 
 <main>
+  <div class="kid-mode-banner">👀 KID MODE — VIEW ONLY</div>
   <div id="error-banner"></div>
   <div class="spinner" id="spinner"></div>
 
@@ -500,6 +541,21 @@ code {
   </div>
 </main>
 
+<!-- PIN Modal -->
+<div class="modal-overlay" id="pin-modal">
+  <div class="modal" style="max-width:320px;text-align:center">
+    <h2>🔐 PARENT MODE</h2>
+    <p style="font-size:7px;color:#889;margin:12px 0">Enter your PIN to unlock</p>
+    <input type="password" id="pin-input" placeholder="PIN" maxlength="8"
+      style="text-align:center;letter-spacing:4px" onkeydown="if(event.key==='Enter')submitPin()">
+    <div id="pin-error" style="color:var(--red-r);font-size:7px;margin-top:8px;display:none">Wrong PIN!</div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="submitPin()">UNLOCK</button>
+      <button class="btn-secondary" onclick="closePinModal()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
 <!-- Setup Modal -->
 <div class="modal-overlay" id="setup-modal">
   <div class="modal">
@@ -518,6 +574,8 @@ code {
     </div>
     <label>Web App URL</label>
     <input type="url" id="script-url-input" placeholder="https://script.google.com/macros/s/.../exec">
+    <label>Parent PIN (used to unlock editing)</label>
+    <input type="password" id="pin-setting-input" placeholder="Enter new PIN (leave blank to keep current)" maxlength="8">
     <div class="modal-actions">
       <button class="btn-primary" onclick="saveSetup()">SAVE &amp; CONNECT</button>
       <button class="btn-secondary" onclick="closeSetup()">CANCEL</button>
@@ -569,6 +627,8 @@ let kids = [];
 let transactions = [];
 let selectedKid = null;
 let txMode = 'earn'; // 'earn' | 'spend'
+let locked = true;
+let parentPin = localStorage.getItem('zelda_pin') || '1234';
 
 const RUPEE_VALUES = [
   { value: 300, color: '#f1c40f', label: 'Gold'   },
@@ -589,6 +649,7 @@ const COLOR_MAP = {
 
 // ── INIT ───────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  applyLock();
   if (!scriptUrl) {
     openSetup();
   } else {
@@ -844,6 +905,40 @@ async function submitGoal() {
   }
 }
 
+// ── LOCK / PIN ─────────────────────────────────────────────
+function applyLock() {
+  document.body.classList.toggle('locked', locked);
+  const btn = document.getElementById('lock-btn');
+  btn.textContent = locked ? '🔒 KID MODE' : '🔓 PARENT';
+}
+
+function toggleLock() {
+  if (locked) {
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-error').style.display = 'none';
+    document.getElementById('pin-modal').classList.add('open');
+  } else {
+    locked = true;
+    applyLock();
+  }
+}
+
+function submitPin() {
+  const entered = document.getElementById('pin-input').value;
+  if (entered === parentPin) {
+    locked = false;
+    applyLock();
+    document.getElementById('pin-modal').classList.remove('open');
+  } else {
+    document.getElementById('pin-error').style.display = 'block';
+    document.getElementById('pin-input').value = '';
+  }
+}
+
+function closePinModal() {
+  document.getElementById('pin-modal').classList.remove('open');
+}
+
 // ── SETUP ──────────────────────────────────────────────────
 function openSetup() {
   document.getElementById('script-url-input').value = scriptUrl;
@@ -856,6 +951,11 @@ function saveSetup() {
   if (!url) { showError('Paste your Apps Script URL.'); return; }
   scriptUrl = url;
   localStorage.setItem('zelda_allowance_script_url', url);
+  const newPin = document.getElementById('pin-setting-input').value.trim();
+  if (newPin) {
+    parentPin = newPin;
+    localStorage.setItem('zelda_pin', newPin);
+  }
   closeSetup();
   loadData();
 }
