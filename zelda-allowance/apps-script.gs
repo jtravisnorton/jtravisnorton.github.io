@@ -19,11 +19,13 @@ const SHEET_NAME_TX = 'Transactions';
 function doGet(e) {
   const action = (e && e.parameter && e.parameter.action) || 'getData';
   try {
-    if (action === 'getData')         return getData();
-    if (action === 'addTransaction')  return addTransaction(e.parameter);
-    if (action === 'addKid')          return addKid(e.parameter);
-    if (action === 'deleteKid')       return deleteKid(e.parameter);
-    if (action === 'setGoal')         return setGoal(e.parameter);
+    if (action === 'getData')          return getData();
+    if (action === 'addTransaction')   return addTransaction(e.parameter);
+    if (action === 'editTransaction')  return editTransaction(e.parameter);
+    if (action === 'deleteTransaction') return deleteTransaction(e.parameter);
+    if (action === 'addKid')           return addKid(e.parameter);
+    if (action === 'deleteKid')        return deleteKid(e.parameter);
+    if (action === 'setGoal')          return setGoal(e.parameter);
   } catch (err) {
     return jsonResponse({ error: err.message });
   }
@@ -58,6 +60,7 @@ function getData() {
   for (let i = 1; i < txRaw.length; i++) {
     if (txRaw[i][0]) {
       transactions.push({
+        rowIndex:    i + 1, // 1-based sheet row
         timestamp:   txRaw[i][0],
         kid:         txRaw[i][1],
         amount:      parseFloat(txRaw[i][2]),
@@ -88,6 +91,65 @@ function addTransaction(params) {
   for (let i = 1; i < kidsData.length; i++) {
     if (kidsData[i][0] === kid) {
       const newBalance = (parseFloat(kidsData[i][1]) || 0) + amount;
+      kidsSheet.getRange(i + 1, 2).setValue(newBalance);
+      return jsonResponse({ success: true, newBalance });
+    }
+  }
+  return jsonResponse({ error: 'Hero not found' });
+}
+
+// ── Edit an existing transaction ──────────────────────────
+function editTransaction(params) {
+  const ss        = SpreadsheetApp.getActiveSpreadsheet();
+  const txSheet   = getOrCreateSheet(ss, SHEET_NAME_TX,   ['Timestamp','Kid','Amount','Description']);
+  const kidsSheet = getOrCreateSheet(ss, SHEET_NAME_KIDS, ['Name','Balance','Color','Goal','GoalName']);
+
+  const rowIndex  = parseInt(params.rowIndex);
+  const newAmount = parseFloat(params.amount);
+  const newDesc   = params.description || '';
+
+  if (isNaN(rowIndex) || isNaN(newAmount)) return jsonResponse({ error: 'Invalid params' });
+
+  const row       = txSheet.getRange(rowIndex, 1, 1, 4).getValues()[0];
+  const oldAmount = parseFloat(row[2]);
+  const kid       = row[1];
+  const diff      = newAmount - oldAmount;
+
+  txSheet.getRange(rowIndex, 3).setValue(newAmount);
+  txSheet.getRange(rowIndex, 4).setValue(newDesc);
+
+  // Adjust kid balance by the difference
+  const kidsData = kidsSheet.getDataRange().getValues();
+  for (let i = 1; i < kidsData.length; i++) {
+    if (kidsData[i][0] === kid) {
+      const newBalance = (parseFloat(kidsData[i][1]) || 0) + diff;
+      kidsSheet.getRange(i + 1, 2).setValue(newBalance);
+      return jsonResponse({ success: true, newBalance });
+    }
+  }
+  return jsonResponse({ error: 'Hero not found' });
+}
+
+// ── Delete a transaction ───────────────────────────────────
+function deleteTransaction(params) {
+  const ss        = SpreadsheetApp.getActiveSpreadsheet();
+  const txSheet   = getOrCreateSheet(ss, SHEET_NAME_TX,   ['Timestamp','Kid','Amount','Description']);
+  const kidsSheet = getOrCreateSheet(ss, SHEET_NAME_KIDS, ['Name','Balance','Color','Goal','GoalName']);
+
+  const rowIndex = parseInt(params.rowIndex);
+  if (isNaN(rowIndex)) return jsonResponse({ error: 'Invalid rowIndex' });
+
+  const row    = txSheet.getRange(rowIndex, 1, 1, 4).getValues()[0];
+  const amount = parseFloat(row[2]);
+  const kid    = row[1];
+
+  txSheet.deleteRow(rowIndex);
+
+  // Reverse the amount from kid's balance
+  const kidsData = kidsSheet.getDataRange().getValues();
+  for (let i = 1; i < kidsData.length; i++) {
+    if (kidsData[i][0] === kid) {
+      const newBalance = (parseFloat(kidsData[i][1]) || 0) - amount;
       kidsSheet.getRange(i + 1, 2).setValue(newBalance);
       return jsonResponse({ success: true, newBalance });
     }

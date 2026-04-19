@@ -285,6 +285,8 @@ main { padding: 20px 16px; max-width: 960px; margin: 0 auto; }
 .btn-goal:hover { border-color: var(--purple-r); color: var(--purple-r); }
 .log-entry.pending { opacity: 0.55; }
 .log-entry.pending .log-desc::after { content: ' (saving...)'; color: #556; }
+.log-entry.editable { cursor: pointer; }
+.log-entry.editable:hover { background: #1a2233; border-color: var(--gold); }
 
 /* ── QUEST LOG ── */
 #quest-log { margin-bottom: 24px; }
@@ -632,6 +634,29 @@ input, select, textarea {
   </div>
 </div>
 
+<!-- Edit Transaction Modal -->
+<div class="modal-overlay" id="edit-tx-modal">
+  <div class="modal" style="max-width:400px">
+    <h2>✏ EDIT ENTRY</h2>
+    <p id="edit-tx-kid" style="font-size:8px;color:var(--gold);margin-bottom:12px"></p>
+    <div class="earn-spend-toggle" style="margin-bottom:12px">
+      <button class="toggle-btn earn active" id="edit-btn-earn" onclick="setEditMode('earn')">▲ EARN</button>
+      <button class="toggle-btn spend" id="edit-btn-spend" onclick="setEditMode('spend')">▼ SPEND</button>
+    </div>
+    <label style="font-size:8px;color:#889;display:block;margin-bottom:4px">Amount ($)</label>
+    <input type="number" id="edit-tx-amount" min="0.01" step="0.01" inputmode="numeric" pattern="[0-9]*">
+    <label style="font-size:8px;color:#889;display:block;margin-top:12px;margin-bottom:4px">Description</label>
+    <input type="text" id="edit-tx-desc">
+    <div class="modal-actions" style="flex-direction:column;gap:8px">
+      <button class="btn-primary" onclick="submitEditTx()">SAVE CHANGES</button>
+      <button class="btn-secondary" id="btn-delete-tx"
+        style="border-color:var(--red-r);color:var(--red-r)"
+        onclick="submitDeleteTx()">DELETE ENTRY</button>
+      <button class="btn-secondary" onclick="closeEditTx()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
 <!-- Set Goal Modal -->
 <div class="modal-overlay" id="goal-modal">
   <div class="modal">
@@ -801,11 +826,13 @@ function renderLog() {
     const amt = parseFloat(tx.amount);
     const earn = amt >= 0;
     const date = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString() : '';
-    return `<li class="log-entry${tx.pending ? ' pending' : ''}">
+    const clickable = !tx.pending && !locked;
+    return `<li class="log-entry${tx.pending ? ' pending' : ''}${clickable ? ' editable' : ''}"
+      ${clickable ? `onclick="openEditTx(${tx.rowIndex})" title="Tap to edit"` : ''}>
       <span class="log-amount ${earn ? 'earn' : 'spend'}">${earn ? '+' : ''}$${Math.abs(amt).toFixed(2)}</span>
       <span class="log-kid">${escHtml(tx.kid)}</span>
       <span class="log-desc">${escHtml(tx.description || '')}</span>
-      <span class="log-date">${date}</span>
+      <span class="log-date">${date}${clickable ? ' ✏' : ''}</span>
     </li>`;
   }).join('');
 }
@@ -957,6 +984,82 @@ async function submitGoal() {
     showError(e.message);
   } finally {
     showSpinner(false);
+  }
+}
+
+// ── EDIT / DELETE TRANSACTION ──────────────────────────────
+let editingTx = null;
+let editMode = 'earn';
+
+function openEditTx(rowIndex) {
+  editingTx = transactions.find(t => t.rowIndex === rowIndex);
+  if (!editingTx) return;
+  editMode = editingTx.amount >= 0 ? 'earn' : 'spend';
+  document.getElementById('edit-tx-kid').textContent = editingTx.kid.toUpperCase();
+  document.getElementById('edit-tx-amount').value = Math.abs(editingTx.amount).toFixed(2);
+  document.getElementById('edit-tx-desc').value = editingTx.description || '';
+  document.getElementById('edit-btn-earn').classList.toggle('active', editMode === 'earn');
+  document.getElementById('edit-btn-spend').classList.toggle('active', editMode === 'spend');
+  document.getElementById('edit-tx-modal').classList.add('open');
+}
+
+function closeEditTx() {
+  document.getElementById('edit-tx-modal').classList.remove('open');
+  editingTx = null;
+}
+
+function setEditMode(mode) {
+  editMode = mode;
+  document.getElementById('edit-btn-earn').classList.toggle('active', mode === 'earn');
+  document.getElementById('edit-btn-spend').classList.toggle('active', mode === 'spend');
+}
+
+async function submitEditTx() {
+  if (!editingTx) return;
+  const amtRaw = parseFloat(document.getElementById('edit-tx-amount').value);
+  const desc   = document.getElementById('edit-tx-desc').value.trim();
+  if (!amtRaw || amtRaw <= 0) { showError('Enter a valid amount.'); return; }
+  const newAmount = editMode === 'spend' ? -amtRaw : amtRaw;
+
+  // Optimistic update
+  const kid = kids.find(k => k.name === editingTx.kid);
+  const oldAmount = editingTx.amount;
+  if (kid) kid.balance = Math.round((kid.balance + (newAmount - oldAmount)) * 100) / 100;
+  editingTx.amount = newAmount;
+  editingTx.description = desc;
+  closeEditTx();
+  renderKids();
+  renderLog();
+
+  try {
+    const res = await api({ action: 'editTransaction', rowIndex: editingTx.rowIndex, amount: newAmount, description: desc });
+    if (res.error) throw new Error(res.error);
+    await loadData();
+  } catch (e) {
+    showError(e.message);
+    await loadData(); // reload to restore truth
+  }
+}
+
+async function submitDeleteTx() {
+  if (!editingTx) return;
+  const tx = editingTx;
+
+  // Optimistic update
+  const kid = kids.find(k => k.name === tx.kid);
+  if (kid) kid.balance = Math.round((kid.balance - tx.amount) * 100) / 100;
+  transactions.splice(transactions.indexOf(tx), 1);
+  closeEditTx();
+  renderKids();
+  renderLog();
+
+  try {
+    const res = await api({ action: 'deleteTransaction', rowIndex: tx.rowIndex });
+    if (res.error) throw new Error(res.error);
+    await loadData();
+  } catch (e) {
+    showError(e.message);
+    await loadData();
   }
 }
 
