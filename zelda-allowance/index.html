@@ -799,7 +799,8 @@ input, select, textarea {
 <div class="modal-overlay" id="edit-tx-modal">
   <div class="modal" style="max-width:400px">
     <h2>✏ EDIT ENTRY</h2>
-    <p id="edit-tx-kid" style="font-size:8px;color:var(--gold);margin-bottom:12px"></p>
+    <p id="edit-tx-kid" style="font-size:8px;color:var(--gold);margin-bottom:4px"></p>
+    <p id="edit-tx-date" style="font-size:7px;color:#778;margin-bottom:12px"></p>
     <div class="earn-spend-toggle" style="margin-bottom:12px">
       <button class="toggle-btn earn active" id="edit-btn-earn" onclick="setEditMode('earn')">▲ EARN</button>
       <button class="toggle-btn spend" id="edit-btn-spend" onclick="setEditMode('spend')">▼ SPEND</button>
@@ -1214,6 +1215,8 @@ function openEditTx(rowIndex) {
   if (!editingTx) return;
   editMode = editingTx.amount >= 0 ? 'earn' : 'spend';
   document.getElementById('edit-tx-kid').textContent = editingTx.kid.toUpperCase();
+  const txDate = editingTx.timestamp ? new Date(editingTx.timestamp).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '';
+  document.getElementById('edit-tx-date').textContent = txDate;
   document.getElementById('edit-tx-amount').value = Math.abs(editingTx.amount).toFixed(2);
   document.getElementById('edit-tx-desc').value = editingTx.description || '';
   document.getElementById('edit-btn-earn').classList.toggle('active', editMode === 'earn');
