@@ -510,6 +510,78 @@ body.locked .add-kid-card { display: none; }
 input, select, textarea {
   font-size: 16px !important;
 }
+
+/* ── CONTRIBUTE ── */
+.contribute-bar {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.btn-contribute {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #1a2a4a, #0a1a3a);
+  border: 2px solid #3498db;
+  color: #3498db;
+  font-family: inherit;
+  font-size: 9px;
+  cursor: pointer;
+  border-radius: 6px;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+.btn-contribute:hover { box-shadow: 0 0 16px rgba(52,152,219,0.4); filter: brightness(1.2); }
+.contribute-kid-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.contribute-kid-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 12px 10px;
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+  text-align: center;
+}
+.contribute-kid-btn:hover { border-color: #3498db; }
+.contribute-kid-btn.selected { border-color: #3498db; background: rgba(52,152,219,0.1); color: #3498db; }
+.contribute-kid-btn .ckb-name { color: var(--gold); display: block; margin-bottom: 4px; }
+.contribute-kid-btn .ckb-quest { font-size: 7px; color: #889; display: block; }
+.contribute-summary {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+  font-size: 8px;
+  display: none;
+}
+.contribute-summary.visible { display: block; }
+.contribute-summary .cs-hearts { font-size: 12px; margin: 6px 0; }
+.btn-paypal {
+  width: 100%;
+  padding: 14px;
+  background: #003087;
+  border: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+  border-radius: 6px;
+  letter-spacing: 1px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-paypal:hover { background: #002070; }
 </style>
 </head>
 <body>
@@ -535,6 +607,11 @@ input, select, textarea {
       <span class="plus">+</span>
       <span>ADD HERO</span>
     </button>
+  </div>
+
+  <!-- Contribute Bar -->
+  <div class="contribute-bar">
+    <button class="btn-contribute" onclick="openContribute()">💙 CONTRIBUTE TO A QUEST</button>
   </div>
 
   <!-- Transaction Panel -->
@@ -574,6 +651,45 @@ input, select, textarea {
     </ul>
   </div>
 </main>
+
+<!-- Contribute Modal -->
+<div class="modal-overlay" id="contribute-modal">
+  <div class="modal" style="max-width:480px">
+    <h2>💙 CONTRIBUTE TO A QUEST</h2>
+    <p style="font-size:7px;color:#889;margin-bottom:14px">
+      Pick a hero, enter an amount, then send via PayPal.<br>
+      Your contribution will be added by a parent once received.
+    </p>
+
+    <label style="font-size:8px;color:#889;display:block;margin-bottom:8px">Choose a hero:</label>
+    <div class="contribute-kid-grid" id="contribute-kid-grid"></div>
+
+    <div class="contribute-summary" id="contribute-summary">
+      <div id="cs-quest-name" style="color:var(--purple-r);margin-bottom:4px"></div>
+      <div class="cs-hearts" id="cs-hearts"></div>
+      <div id="cs-remaining" style="color:#aab;font-size:7px;margin-bottom:10px"></div>
+      <label style="font-size:8px;color:#889;display:block;margin-bottom:6px">Amount to contribute ($)</label>
+      <input type="number" id="contribute-amount" min="1" step="1"
+        inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 25"
+        style="margin-bottom:12px" oninput="updatePaypalBtn()">
+      <form id="paypal-form" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
+        <input type="hidden" name="cmd" value="_donations">
+        <input type="hidden" name="business" value="jtravisnorton@gmail.com">
+        <input type="hidden" name="currency_code" value="USD">
+        <input type="hidden" name="no_shipping" value="1">
+        <input type="hidden" name="item_name" id="paypal-item-name" value="">
+        <input type="hidden" name="amount" id="paypal-amount" value="">
+        <button type="submit" class="btn-paypal" id="btn-paypal" onclick="return preparePaypal()">
+          <span>PayPal</span><span id="paypal-btn-label">Send via PayPal</span>
+        </button>
+      </form>
+    </div>
+
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn-secondary" onclick="closeContribute()">CLOSE</button>
+    </div>
+  </div>
+</div>
 
 <!-- PIN Modal -->
 <div class="modal-overlay" id="pin-modal">
@@ -1118,6 +1234,92 @@ async function submitDeleteTx() {
     showError(e.message);
     await loadData();
   }
+}
+
+// ── CONTRIBUTE / PAYPAL ────────────────────────────────────
+let contributeKid = null;
+
+function openContribute() {
+  contributeKid = null;
+  document.getElementById('contribute-summary').classList.remove('visible');
+  renderContributeKids();
+  document.getElementById('contribute-modal').classList.add('open');
+}
+function closeContribute() {
+  document.getElementById('contribute-modal').classList.remove('open');
+}
+
+function renderContributeKids() {
+  const grid = document.getElementById('contribute-kid-grid');
+  grid.innerHTML = kids.map(kid => {
+    const questLabel = kid.goal > 0
+      ? `⚔ ${escHtml(kid.goalName || 'Quest')}`
+      : 'No active quest';
+    return `<button class="contribute-kid-btn${contributeKid && contributeKid.name === kid.name ? ' selected' : ''}"
+      onclick="selectContributeKid('${escHtml(kid.name)}')">
+      <span class="ckb-name">${escHtml(kid.name)}</span>
+      <span class="ckb-quest">${questLabel}</span>
+    </button>`;
+  }).join('');
+}
+
+function selectContributeKid(name) {
+  contributeKid = kids.find(k => k.name === name) || null;
+  renderContributeKids();
+
+  const summary = document.getElementById('contribute-summary');
+  if (!contributeKid) { summary.classList.remove('visible'); return; }
+
+  // Quest info
+  const hasQuest  = contributeKid.goal > 0;
+  const balance   = Math.max(0, contributeKid.balance);
+  const remaining = hasQuest ? Math.max(0, contributeKid.goal - balance) : 0;
+
+  document.getElementById('cs-quest-name').textContent = hasQuest
+    ? `⚔ ${contributeKid.goalName || 'Quest'} — $${contributeKid.goal.toFixed(2)}`
+    : `💙 General savings for ${contributeKid.name}`;
+
+  if (hasQuest) {
+    const pct    = Math.min(balance / contributeKid.goal, 1);
+    const filled = Math.round(pct * 10);
+    document.getElementById('cs-hearts').innerHTML = Array.from({ length: 10 }, (_, i) =>
+      `<span style="color:${i < filled ? 'var(--heart-full)' : 'var(--heart-empty)'}">♥</span>`
+    ).join('');
+    document.getElementById('cs-remaining').textContent =
+      `$${remaining.toFixed(2)} still needed`;
+    document.getElementById('contribute-amount').value =
+      remaining > 0 ? Math.ceil(remaining) : '';
+  } else {
+    document.getElementById('cs-hearts').innerHTML = '';
+    document.getElementById('cs-remaining').textContent = '';
+    document.getElementById('contribute-amount').value = '';
+  }
+
+  summary.classList.add('visible');
+  updatePaypalBtn();
+}
+
+function updatePaypalBtn() {
+  const amt   = parseFloat(document.getElementById('contribute-amount').value);
+  const label = document.getElementById('paypal-btn-label');
+  label.textContent = amt > 0
+    ? `Send $${amt.toFixed(2)} via PayPal`
+    : 'Send via PayPal';
+}
+
+function preparePaypal() {
+  if (!contributeKid) return false;
+  const amt = parseFloat(document.getElementById('contribute-amount').value);
+  if (!amt || amt <= 0) { showError('Enter an amount first.'); return false; }
+
+  const questLabel = contributeKid.goal > 0
+    ? `${contributeKid.goalName || 'Quest'}`
+    : 'Savings';
+  const itemName = `Quest contribution for ${contributeKid.name}: ${questLabel}`;
+
+  document.getElementById('paypal-item-name').value = itemName;
+  document.getElementById('paypal-amount').value    = amt.toFixed(2);
+  return true; // allow form submit
 }
 
 // ── LOCK / PIN ─────────────────────────────────────────────
