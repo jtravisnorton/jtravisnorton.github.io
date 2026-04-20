@@ -146,8 +146,8 @@ main { padding: 20px 16px; max-width: 960px; margin: 0 auto; }
 .heart.full { color: var(--heart-full); }
 .heart.empty { color: var(--heart-empty); }
 .goal-label {
-  font-size: 6px;
-  color: #667;
+  font-size: 8px;
+  color: #99aacc;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -311,9 +311,15 @@ main { padding: 20px 16px; max-width: 960px; margin: 0 auto; }
 .log-amount.earn { color: var(--green-r); }
 .log-amount.spend { color: var(--red-r); }
 .log-kid { color: var(--gold); min-width: 70px; }
-.log-desc { color: #889; flex: 1; }
-.log-date { color: #445; font-size: 6px; white-space: nowrap; }
-.log-empty { color: #445; font-size: 8px; padding: 20px; text-align: center; }
+.log-desc { color: #aab; flex: 1; }
+.log-date { color: #778; font-size: 8px; white-space: nowrap; }
+.log-empty { color: #667; font-size: 8px; padding: 20px; text-align: center; }
+.log-entry.quest {
+  border-color: var(--purple-r);
+  background: rgba(155,89,182,0.08);
+}
+.log-quest-title { color: var(--purple-r); flex: 1; }
+.log-quest-progress { font-size: 9px; color: #aab; white-space: nowrap; }
 
 /* ── MODALS ── */
 .modal-overlay {
@@ -563,7 +569,7 @@ input, select, textarea {
 
   <!-- Quest Log -->
   <div id="quest-log">
-    <h2>📜 QUEST LOG</h2>
+    <h2 id="quest-log-title">📜 QUEST LOG</h2>
     <ul class="log-list" id="log-list">
       <li class="log-empty">No quests completed yet...</li>
     </ul>
@@ -817,32 +823,75 @@ function heartDisplay(balance, goal) {
 
 // ── RENDER: QUEST LOG ──────────────────────────────────────
 function renderLog() {
-  const list = document.getElementById('log-list');
-  if (!transactions.length) {
+  const list  = document.getElementById('log-list');
+  const title = document.getElementById('quest-log-title');
+
+  // Filter by selected kid if one is active
+  const filtered = selectedKid
+    ? transactions.filter(t => t.kid === selectedKid.name)
+    : transactions;
+
+  title.textContent = selectedKid
+    ? `📜 ${selectedKid.name.toUpperCase()}'S QUESTS`
+    : '📜 QUEST LOG';
+
+  const items = [];
+
+  // If a kid is selected and has a goal, show it as an active quest at the top
+  if (selectedKid && selectedKid.goal > 0) {
+    const balance = Math.max(0, selectedKid.balance);
+    const pct     = Math.min(balance / selectedKid.goal, 1);
+    const filled  = Math.round(pct * 10);
+    const hearts  = Array.from({ length: 10 }, (_, i) =>
+      `<span style="color:${i < filled ? 'var(--heart-full)' : 'var(--heart-empty)'}">♥</span>`
+    ).join('');
+    const remaining = Math.max(0, selectedKid.goal - balance).toFixed(2);
+    items.push(`<li class="log-entry quest">
+      <span style="font-size:14px">⚔</span>
+      <span class="log-quest-title">
+        QUEST: ${escHtml(selectedKid.goalName || 'Savings Goal')}
+        <span style="display:block;margin-top:4px">${hearts}</span>
+      </span>
+      <span class="log-quest-progress">$${remaining}<br>to go</span>
+    </li>`);
+  }
+
+  if (!filtered.length && !items.length) {
     list.innerHTML = '<li class="log-empty">No quests completed yet...</li>';
     return;
   }
-  list.innerHTML = transactions.slice(0, 20).map(tx => {
-    const amt = parseFloat(tx.amount);
-    const earn = amt >= 0;
-    const date = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString() : '';
+
+  items.push(...filtered.slice(0, 20).map(tx => {
+    const amt      = parseFloat(tx.amount);
+    const earn     = amt >= 0;
+    const date     = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString() : '';
     const clickable = !tx.pending && !locked;
     return `<li class="log-entry${tx.pending ? ' pending' : ''}${clickable ? ' editable' : ''}"
       ${clickable ? `onclick="openEditTx(${tx.rowIndex})" title="Tap to edit"` : ''}>
       <span class="log-amount ${earn ? 'earn' : 'spend'}">${earn ? '+' : ''}$${Math.abs(amt).toFixed(2)}</span>
-      <span class="log-kid">${escHtml(tx.kid)}</span>
+      ${selectedKid ? '' : `<span class="log-kid">${escHtml(tx.kid)}</span>`}
       <span class="log-desc">${escHtml(tx.description || '')}</span>
       <span class="log-date">${date}${clickable ? ' ✏' : ''}</span>
     </li>`;
-  }).join('');
+  }));
+
+  list.innerHTML = items.join('');
 }
 
 // ── SELECT KID ─────────────────────────────────────────────
 function selectKid(kid) {
-  selectedKid = kid;
-  document.querySelectorAll('.kid-card').forEach(c => c.classList.remove('selected'));
-  event.currentTarget.classList.add('selected');
-  updateTxPanel();
+  if (selectedKid && selectedKid.name === kid.name) {
+    // Deselect on second tap
+    selectedKid = null;
+    document.querySelectorAll('.kid-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('tx-panel').classList.remove('visible');
+  } else {
+    selectedKid = kid;
+    document.querySelectorAll('.kid-card').forEach(c => c.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+    updateTxPanel();
+  }
+  renderLog();
 }
 
 function updateTxPanel() {
