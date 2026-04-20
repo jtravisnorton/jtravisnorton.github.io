@@ -23,12 +23,14 @@
   --text: #e8d5a3;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
 body {
   font-family: 'Press Start 2P', monospace;
   background: var(--bg);
   color: var(--text);
-  min-height: 100vh;
   font-size: 10px;
+  display: flex;
+  flex-direction: column;
   background-image:
     radial-gradient(ellipse at 20% 20%, rgba(34,139,34,0.08) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 80%, rgba(255,215,0,0.05) 0%, transparent 60%);
@@ -37,29 +39,29 @@ body {
 /* ── HEADER ── */
 header {
   text-align: center;
-  padding: 24px 16px 16px;
+  padding: 10px 16px 8px;
   border-bottom: 2px solid var(--border);
   position: relative;
+  flex-shrink: 0;
 }
 .triforce {
-  font-size: 28px;
-  line-height: 1;
+  font-size: 16px;
+  line-height: 1.2;
   color: var(--gold);
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   text-shadow: 0 0 20px rgba(255,215,0,0.5);
 }
 header h1 {
-  font-size: 18px;
+  font-size: 15px;
   color: var(--gold);
   text-shadow: 0 0 10px rgba(255,215,0,0.4), 2px 2px 0 #000;
   letter-spacing: 2px;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
 }
 header p {
-  font-size: 7px;
+  font-size: 6px;
   color: #8899aa;
-  margin-bottom: 4px;
 }
 .gear-btn {
   position: absolute;
@@ -78,25 +80,28 @@ header p {
 .gear-btn:hover { background: var(--border); }
 
 /* ── MAIN ── */
-main { padding: 20px 16px; max-width: 960px; margin: 0 auto; }
+main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
 
 /* ── KID CARDS ROW ── */
 .kids-section {
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  flex-shrink: 0;
   background: var(--bg);
-  padding: 12px 0 4px;
-  margin: -20px -16px 0;
-  padding-left: 16px;
-  padding-right: 16px;
+  padding: 10px 16px 8px;
   border-bottom: 1px solid var(--border);
 }
 .kids-row {
   display: flex;
   gap: 12px;
   overflow-x: auto;
-  padding-bottom: 10px;
+  padding-bottom: 8px;
   scrollbar-width: none;
 }
 .kids-row::-webkit-scrollbar { display: none; }
@@ -297,6 +302,14 @@ main { padding: 20px 16px; max-width: 960px; margin: 0 auto; }
 .log-entry.pending .log-desc::after { content: ' (saving...)'; color: #556; }
 .log-entry.editable { cursor: pointer; }
 .log-entry.editable:hover { background: #1a2233; border-color: var(--gold); }
+
+/* ── SCROLL AREA ── */
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+}
 
 /* ── QUEST LOG ── */
 #quest-log { margin-bottom: 24px; }
@@ -624,44 +637,47 @@ input, select, textarea {
     </div>
   </div>
 
-  <div style="height:20px"></div>
+  <!-- Scrollable content area -->
+  <div class="scroll-area">
 
-  <!-- Transaction Panel -->
-  <div id="tx-panel">
-    <h2 id="tx-title">SELECT A HERO</h2>
-    <div class="earn-spend-toggle">
-      <button class="toggle-btn earn active" id="btn-earn" onclick="setMode('earn')">▲ EARN</button>
-      <button class="toggle-btn spend" id="btn-spend" onclick="setMode('spend')">▼ SPEND</button>
+    <!-- Transaction Panel -->
+    <div id="tx-panel">
+      <h2 id="tx-title">SELECT A HERO</h2>
+      <div class="earn-spend-toggle">
+        <button class="toggle-btn earn active" id="btn-earn" onclick="setMode('earn')">▲ EARN</button>
+        <button class="toggle-btn spend" id="btn-spend" onclick="setMode('spend')">▼ SPEND</button>
+      </div>
+      <div class="tx-fields">
+        <input type="number" id="tx-amount" placeholder="Amount ($)" min="0.01" step="0.01" inputmode="numeric" pattern="[0-9]*" oninput="updateSubmitLabel()">
+        <input type="text" id="tx-desc" placeholder="Description...">
+      </div>
+      <div class="presets">
+        <button class="preset-btn" onclick="setPreset(5,'Weekly Allowance')">💰 Allowance $5</button>
+        <button class="preset-btn" onclick="setPreset(10,'Weekly Allowance')">💰 Allowance $10</button>
+        <button class="preset-btn" onclick="setPreset(1,'Chore Completed')">⚔ Chore $1</button>
+        <button class="preset-btn" onclick="setPreset(2,'Chore Completed')">⚔ Chore $2</button>
+        <button class="preset-btn" onclick="setPreset(5,'Chore Completed')">⚔ Chore $5</button>
+        <button class="preset-btn" onclick="setPreset(0,'Gift')">🎁 Gift...</button>
+      </div>
+      <div class="tx-actions">
+        <button class="btn-submit" id="btn-submit" onclick="submitTransaction()">
+          <div class="btn-inner">
+            <div class="btn-spinner"></div>
+            <span id="btn-submit-label">▲ ADD RUPEES</span>
+          </div>
+        </button>
+      </div>
     </div>
-    <div class="tx-fields">
-      <input type="number" id="tx-amount" placeholder="Amount ($)" min="0.01" step="0.01" inputmode="numeric" pattern="[0-9]*" oninput="updateSubmitLabel()">
-      <input type="text" id="tx-desc" placeholder="Description...">
-    </div>
-    <div class="presets">
-      <button class="preset-btn" onclick="setPreset(5,'Weekly Allowance')">💰 Allowance $5</button>
-      <button class="preset-btn" onclick="setPreset(10,'Weekly Allowance')">💰 Allowance $10</button>
-      <button class="preset-btn" onclick="setPreset(1,'Chore Completed')">⚔ Chore $1</button>
-      <button class="preset-btn" onclick="setPreset(2,'Chore Completed')">⚔ Chore $2</button>
-      <button class="preset-btn" onclick="setPreset(5,'Chore Completed')">⚔ Chore $5</button>
-      <button class="preset-btn" onclick="setPreset(0,'Gift')">🎁 Gift...</button>
-    </div>
-    <div class="tx-actions">
-      <button class="btn-submit" id="btn-submit" onclick="submitTransaction()">
-        <div class="btn-inner">
-          <div class="btn-spinner"></div>
-          <span id="btn-submit-label">▲ ADD RUPEES</span>
-        </div>
-      </button>
-    </div>
-  </div>
 
-  <!-- Quest Log -->
-  <div id="quest-log">
-    <h2 id="quest-log-title">📜 QUEST LOG</h2>
-    <ul class="log-list" id="log-list">
-      <li class="log-empty">No quests completed yet...</li>
-    </ul>
-  </div>
+    <!-- Quest Log -->
+    <div id="quest-log">
+      <h2 id="quest-log-title">📜 QUEST LOG</h2>
+      <ul class="log-list" id="log-list">
+        <li class="log-empty">Select a hero to view their quests.</li>
+      </ul>
+    </div>
+
+  </div><!-- end scroll-area -->
 </main>
 
 <!-- Contribute Modal -->
