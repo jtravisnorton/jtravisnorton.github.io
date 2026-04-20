@@ -668,7 +668,8 @@ input, select, textarea {
       <div id="cs-quest-name" style="color:var(--purple-r);margin-bottom:4px"></div>
       <div class="cs-hearts" id="cs-hearts"></div>
       <div id="cs-remaining" style="color:#aab;font-size:7px;margin-bottom:10px"></div>
-      <label style="font-size:8px;color:#889;display:block;margin-bottom:6px">Amount to contribute ($)</label>
+      <div id="contribute-presets" style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap"></div>
+      <label style="font-size:8px;color:#889;display:block;margin-bottom:6px">Or enter a custom amount ($)</label>
       <input type="number" id="contribute-amount" min="1" step="1"
         inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 25"
         style="margin-bottom:12px" oninput="updatePaypalBtn()">
@@ -1279,6 +1280,8 @@ function selectContributeKid(name) {
     ? `⚔ ${contributeKid.goalName || 'Quest'} — $${contributeKid.goal.toFixed(2)}`
     : `💙 General savings for ${contributeKid.name}`;
 
+  document.getElementById('contribute-amount').value = '';
+
   if (hasQuest) {
     const pct    = Math.min(balance / contributeKid.goal, 1);
     const filled = Math.round(pct * 10);
@@ -1287,15 +1290,29 @@ function selectContributeKid(name) {
     ).join('');
     document.getElementById('cs-remaining').textContent =
       `$${remaining.toFixed(2)} still needed`;
-    document.getElementById('contribute-amount').value =
-      remaining > 0 ? Math.ceil(remaining) : '';
+    // Build preset buttons: $5, $10, and the remaining amount (if different)
+    const presets = [5, 10];
+    const rem = Math.ceil(remaining);
+    if (rem > 0 && !presets.includes(rem)) presets.push(rem);
+    document.getElementById('contribute-presets').innerHTML = presets.map(amt =>
+      `<button class="preset-btn" style="flex:1" onclick="setContributeAmount(${amt})">
+        ${amt === rem && rem > 0 ? '⚔ ' : ''}$${amt}${amt === rem && rem > 0 ? ' (finish!)' : ''}
+      </button>`
+    ).join('');
   } else {
     document.getElementById('cs-hearts').innerHTML = '';
     document.getElementById('cs-remaining').textContent = '';
-    document.getElementById('contribute-amount').value = '';
+    document.getElementById('contribute-presets').innerHTML =
+      `<button class="preset-btn" style="flex:1" onclick="setContributeAmount(5)">$5</button>
+       <button class="preset-btn" style="flex:1" onclick="setContributeAmount(10)">$10</button>`;
   }
 
   summary.classList.add('visible');
+  updatePaypalBtn();
+}
+
+function setContributeAmount(amt) {
+  document.getElementById('contribute-amount').value = amt;
   updatePaypalBtn();
 }
 
