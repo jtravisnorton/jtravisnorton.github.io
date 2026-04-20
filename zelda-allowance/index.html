@@ -299,7 +299,26 @@ main {
 
 /* ── QUEST LOG ── */
 #quest-log { margin-bottom: 24px; }
-#quest-log h2 { font-size: 11px; color: var(--gold); margin-bottom: 12px; }
+.quest-log-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.quest-log-header h2 { font-size: 11px; color: var(--gold); flex: 1; }
+.btn-add-rupees {
+  padding: 7px 12px;
+  background: linear-gradient(135deg, #1a4a1a, #0a3a0a);
+  border: 2px solid var(--green-r);
+  color: var(--green-r);
+  font-family: inherit;
+  font-size: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  white-space: nowrap;
+  display: none;
+}
+.btn-add-rupees.visible { display: block; }
 .log-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .log-entry {
   background: var(--card-bg);
@@ -627,7 +646,10 @@ input, select, textarea {
 
     <!-- Quest Log -->
     <div id="quest-log">
-      <h2 id="quest-log-title">📜 QUEST LOG</h2>
+      <div class="quest-log-header">
+        <h2 id="quest-log-title">📜 QUEST LOG</h2>
+        <button class="btn-add-rupees" id="btn-add-rupees" onclick="openTxModal()">+ ADD / SPEND</button>
+      </div>
       <ul class="log-list" id="log-list">
         <li class="log-empty">Select a hero to view their quests.</li>
       </ul>
@@ -957,8 +979,10 @@ function heartDisplay(balance, goal) {
 
 // ── RENDER: QUEST LOG ──────────────────────────────────────
 function renderLog() {
-  const list  = document.getElementById('log-list');
-  const title = document.getElementById('quest-log-title');
+  const list    = document.getElementById('log-list');
+  const title   = document.getElementById('quest-log-title');
+  const addBtn  = document.getElementById('btn-add-rupees');
+  addBtn.classList.toggle('visible', !!selectedKid && !locked);
 
   // No kid selected — prompt to pick one
   if (!selectedKid) {
@@ -1031,7 +1055,6 @@ function selectKid(kid) {
   if (!wasSelected) event.currentTarget.classList.add('selected');
   renderLog();
   // In parent mode, tapping a card opens the transaction modal
-  if (!wasSelected && !locked) openTxModal();
 }
 
 function openTxModal() {
