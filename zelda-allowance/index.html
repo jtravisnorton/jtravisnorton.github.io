@@ -188,20 +188,6 @@ main {
 .add-kid-card .plus { font-size: 24px; line-height: 1; }
 
 /* ── TRANSACTION PANEL ── */
-#tx-panel {
-  background: var(--card-bg);
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 24px;
-  display: none;
-}
-#tx-panel.visible { display: block; }
-#tx-panel h2 {
-  font-size: 11px;
-  color: var(--gold);
-  margin-bottom: 16px;
-}
 .earn-spend-toggle {
   display: flex;
   gap: 8px;
@@ -520,7 +506,6 @@ code {
 }
 body.locked .kid-mode-banner { display: block; }
 body.locked .gear-btn { display: none; }
-body.locked #tx-panel { display: none !important; }
 body.locked .add-kid-card { display: none; }
 
 @media (max-width: 480px) {
@@ -640,35 +625,6 @@ input, select, textarea {
   <!-- Scrollable content area -->
   <div class="scroll-area">
 
-    <!-- Transaction Panel -->
-    <div id="tx-panel">
-      <h2 id="tx-title">SELECT A HERO</h2>
-      <div class="earn-spend-toggle">
-        <button class="toggle-btn earn active" id="btn-earn" onclick="setMode('earn')">▲ EARN</button>
-        <button class="toggle-btn spend" id="btn-spend" onclick="setMode('spend')">▼ SPEND</button>
-      </div>
-      <div class="tx-fields">
-        <input type="number" id="tx-amount" placeholder="Amount ($)" min="0.01" step="0.01" inputmode="numeric" pattern="[0-9]*" oninput="updateSubmitLabel()">
-        <input type="text" id="tx-desc" placeholder="Description...">
-      </div>
-      <div class="presets">
-        <button class="preset-btn" onclick="setPreset(5,'Weekly Allowance')">💰 Allowance $5</button>
-        <button class="preset-btn" onclick="setPreset(10,'Weekly Allowance')">💰 Allowance $10</button>
-        <button class="preset-btn" onclick="setPreset(1,'Chore Completed')">⚔ Chore $1</button>
-        <button class="preset-btn" onclick="setPreset(2,'Chore Completed')">⚔ Chore $2</button>
-        <button class="preset-btn" onclick="setPreset(5,'Chore Completed')">⚔ Chore $5</button>
-        <button class="preset-btn" onclick="setPreset(0,'Gift')">🎁 Gift...</button>
-      </div>
-      <div class="tx-actions">
-        <button class="btn-submit" id="btn-submit" onclick="submitTransaction()">
-          <div class="btn-inner">
-            <div class="btn-spinner"></div>
-            <span id="btn-submit-label">▲ ADD RUPEES</span>
-          </div>
-        </button>
-      </div>
-    </div>
-
     <!-- Quest Log -->
     <div id="quest-log">
       <h2 id="quest-log-title">📜 QUEST LOG</h2>
@@ -679,6 +635,39 @@ input, select, textarea {
 
   </div><!-- end scroll-area -->
 </main>
+
+<!-- Transaction Modal -->
+<div class="modal-overlay" id="tx-modal">
+  <div class="modal" style="max-width:420px">
+    <h2 id="tx-modal-title">LINK'S TREASURY</h2>
+    <div class="earn-spend-toggle">
+      <button class="toggle-btn earn active" id="btn-earn" onclick="setMode('earn')">▲ EARN</button>
+      <button class="toggle-btn spend" id="btn-spend" onclick="setMode('spend')">▼ SPEND</button>
+    </div>
+    <div class="presets" style="margin-bottom:12px">
+      <button class="preset-btn" onclick="setPreset(5,'Weekly Allowance')">💰 Allowance $5</button>
+      <button class="preset-btn" onclick="setPreset(10,'Weekly Allowance')">💰 Allowance $10</button>
+      <button class="preset-btn" onclick="setPreset(1,'Chore Completed')">⚔ Chore $1</button>
+      <button class="preset-btn" onclick="setPreset(2,'Chore Completed')">⚔ Chore $2</button>
+      <button class="preset-btn" onclick="setPreset(5,'Chore Completed')">⚔ Chore $5</button>
+      <button class="preset-btn" onclick="setPreset(0,'Gift')">🎁 Gift...</button>
+    </div>
+    <label style="font-size:8px;color:#889;display:block;margin-bottom:4px">Amount ($)</label>
+    <input type="number" id="tx-amount" placeholder="0.00" min="0.01" step="0.01"
+      inputmode="numeric" pattern="[0-9]*" oninput="updateSubmitLabel()" style="margin-bottom:10px">
+    <label style="font-size:8px;color:#889;display:block;margin-bottom:4px">Description</label>
+    <input type="text" id="tx-desc" placeholder="e.g. Weekly allowance" style="margin-bottom:16px">
+    <button class="btn-submit" id="btn-submit" onclick="submitTransaction()">
+      <div class="btn-inner">
+        <div class="btn-spinner"></div>
+        <span id="btn-submit-label">▲ ADD RUPEES</span>
+      </div>
+    </button>
+    <div class="modal-actions" style="margin-top:10px">
+      <button class="btn-secondary" onclick="closeTxModal()">CANCEL</button>
+    </div>
+  </div>
+</div>
 
 <!-- Contribute Modal -->
 <div class="modal-overlay" id="contribute-modal">
@@ -1036,26 +1025,31 @@ function renderLog() {
 
 // ── SELECT KID ─────────────────────────────────────────────
 function selectKid(kid) {
-  if (selectedKid && selectedKid.name === kid.name) {
-    // Deselect on second tap
-    selectedKid = null;
-    document.querySelectorAll('.kid-card').forEach(c => c.classList.remove('selected'));
-    document.getElementById('tx-panel').classList.remove('visible');
-  } else {
-    selectedKid = kid;
-    document.querySelectorAll('.kid-card').forEach(c => c.classList.remove('selected'));
-    event.currentTarget.classList.add('selected');
-    updateTxPanel();
-  }
+  const wasSelected = selectedKid && selectedKid.name === kid.name;
+  selectedKid = wasSelected ? null : kid;
+  document.querySelectorAll('.kid-card').forEach(c => c.classList.remove('selected'));
+  if (!wasSelected) event.currentTarget.classList.add('selected');
   renderLog();
+  // In parent mode, tapping a card opens the transaction modal
+  if (!wasSelected && !locked) openTxModal();
 }
 
-function updateTxPanel() {
+function openTxModal() {
   if (!selectedKid) return;
-  const panel = document.getElementById('tx-panel');
-  panel.classList.add('visible');
-  document.getElementById('tx-title').textContent =
+  document.getElementById('tx-modal-title').textContent =
     selectedKid.name.toUpperCase() + "'S TREASURY";
+  // Reset fields
+  txMode = 'earn';
+  document.getElementById('btn-earn').classList.add('active');
+  document.getElementById('btn-spend').classList.remove('active');
+  document.getElementById('tx-amount').value = '';
+  document.getElementById('tx-desc').value = '';
+  updateSubmitLabel();
+  document.getElementById('tx-modal').classList.add('open');
+}
+
+function closeTxModal() {
+  document.getElementById('tx-modal').classList.remove('open');
 }
 
 // ── TRANSACTION ────────────────────────────────────────────
@@ -1104,13 +1098,11 @@ async function submitTransaction() {
   renderKids();
   renderLog();
 
-  // Lock UI
+  // Close modal and lock UI
+  closeTxModal();
   const btn = document.getElementById('btn-submit');
   btn.disabled = true;
   btn.classList.add('loading');
-  document.getElementById('tx-amount').value = '';
-  document.getElementById('tx-desc').value = '';
-  updateSubmitLabel();
 
   if (earn) { playEarn(); notify(`${selectedKid.name} found $${amtRaw.toFixed(2)}! ◆`); }
   else       { playSpend(); notify(`${selectedKid.name} spent $${amtRaw.toFixed(2)} ◆`); }
