@@ -681,7 +681,7 @@ input, select, textarea {
         <input type="hidden" name="item_name" id="paypal-item-name" value="">
         <input type="hidden" name="amount" id="paypal-amount" value="">
         <button type="submit" class="btn-paypal" id="btn-paypal" onclick="return preparePaypal()">
-          <span>PayPal</span><span id="paypal-btn-label">Send via PayPal</span>
+          <span>Send via PayPal</span>
         </button>
       </form>
     </div>
@@ -1316,13 +1316,7 @@ function setContributeAmount(amt) {
   updatePaypalBtn();
 }
 
-function updatePaypalBtn() {
-  const amt   = parseFloat(document.getElementById('contribute-amount').value);
-  const label = document.getElementById('paypal-btn-label');
-  label.textContent = amt > 0
-    ? `Send $${amt.toFixed(2)} via PayPal`
-    : 'Send via PayPal';
-}
+function updatePaypalBtn() {}
 
 function preparePaypal() {
   if (!contributeKid) return false;
