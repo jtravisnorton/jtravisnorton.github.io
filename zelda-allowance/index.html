@@ -563,7 +563,6 @@ input, select, textarea {
           <span id="btn-submit-label">▲ ADD RUPEES</span>
         </div>
       </button>
-      <button class="btn-goal" onclick="openGoal()">♥ SET SAVINGS GOAL</button>
     </div>
   </div>
 
@@ -663,16 +662,16 @@ input, select, textarea {
   </div>
 </div>
 
-<!-- Set Goal Modal -->
+<!-- Edit Quest Modal -->
 <div class="modal-overlay" id="goal-modal">
   <div class="modal">
-    <h2>♥ SET SAVINGS GOAL</h2>
+    <h2>⚔ EDIT QUEST</h2>
     <label>What are you saving for?</label>
     <input type="text" id="goal-name" placeholder="e.g. Nintendo Switch, LEGO set...">
-    <label>Goal Amount ($)</label>
+    <label>Quest Amount ($)</label>
     <input type="number" id="goal-amount" placeholder="e.g. 299" min="1" step="1" inputmode="numeric" pattern="[0-9]*">
     <div class="modal-actions">
-      <button class="btn-primary" onclick="submitGoal()">SET GOAL</button>
+      <button class="btn-primary" onclick="submitGoal()">SET QUEST</button>
       <button class="btn-secondary" onclick="closeGoal()">CANCEL</button>
     </div>
   </div>
@@ -779,7 +778,7 @@ function makeKidCard(kid) {
   const rupeeHtml = rupeeBreakdown(balance);
   const heartsHtml = heartDisplay(balance, kid.goal);
   const goalText = kid.goal > 0
-    ? `<div class="goal-label">${escHtml(kid.goalName || 'Savings Goal')}: $${kid.goal}</div>`
+    ? `<div class="goal-label">⚔ ${escHtml(kid.goalName || 'Quest')}: $${kid.goal}</div>`
     : '';
 
   card.innerHTML = `
@@ -826,54 +825,65 @@ function renderLog() {
   const list  = document.getElementById('log-list');
   const title = document.getElementById('quest-log-title');
 
-  // Filter by selected kid if one is active
-  const filtered = selectedKid
-    ? transactions.filter(t => t.kid === selectedKid.name)
-    : transactions;
-
-  title.textContent = selectedKid
-    ? `📜 ${selectedKid.name.toUpperCase()}'S QUESTS`
-    : '📜 QUEST LOG';
-
-  const items = [];
-
-  // If a kid is selected and has a goal, show it as an active quest at the top
-  if (selectedKid && selectedKid.goal > 0) {
-    const balance = Math.max(0, selectedKid.balance);
-    const pct     = Math.min(balance / selectedKid.goal, 1);
-    const filled  = Math.round(pct * 10);
-    const hearts  = Array.from({ length: 10 }, (_, i) =>
-      `<span style="color:${i < filled ? 'var(--heart-full)' : 'var(--heart-empty)'}">♥</span>`
-    ).join('');
-    const remaining = Math.max(0, selectedKid.goal - balance).toFixed(2);
-    items.push(`<li class="log-entry quest">
-      <span style="font-size:14px">⚔</span>
-      <span class="log-quest-title">
-        QUEST: ${escHtml(selectedKid.goalName || 'Savings Goal')}
-        <span style="display:block;margin-top:4px">${hearts}</span>
-      </span>
-      <span class="log-quest-progress">$${remaining}<br>to go</span>
-    </li>`);
-  }
-
-  if (!filtered.length && !items.length) {
-    list.innerHTML = '<li class="log-empty">No quests completed yet...</li>';
+  // No kid selected — prompt to pick one
+  if (!selectedKid) {
+    title.textContent = '📜 QUEST LOG';
+    list.innerHTML = '<li class="log-empty">Select a hero to view their quests.</li>';
     return;
   }
 
-  items.push(...filtered.slice(0, 20).map(tx => {
-    const amt      = parseFloat(tx.amount);
-    const earn     = amt >= 0;
-    const date     = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString() : '';
-    const clickable = !tx.pending && !locked;
-    return `<li class="log-entry${tx.pending ? ' pending' : ''}${clickable ? ' editable' : ''}"
-      ${clickable ? `onclick="openEditTx(${tx.rowIndex})" title="Tap to edit"` : ''}>
-      <span class="log-amount ${earn ? 'earn' : 'spend'}">${earn ? '+' : ''}$${Math.abs(amt).toFixed(2)}</span>
-      ${selectedKid ? '' : `<span class="log-kid">${escHtml(tx.kid)}</span>`}
-      <span class="log-desc">${escHtml(tx.description || '')}</span>
-      <span class="log-date">${date}${clickable ? ' ✏' : ''}</span>
-    </li>`;
-  }));
+  title.textContent = `📜 ${selectedKid.name.toUpperCase()}'S QUESTS`;
+  const filtered = transactions.filter(t => t.kid === selectedKid.name);
+  const items    = [];
+
+  // Quest card — always shown when a kid is selected
+  if (selectedKid.goal > 0) {
+    const balance   = Math.max(0, selectedKid.balance);
+    const pct       = Math.min(balance / selectedKid.goal, 1);
+    const filled    = Math.round(pct * 10);
+    const hearts    = Array.from({ length: 10 }, (_, i) =>
+      `<span style="color:${i < filled ? 'var(--heart-full)' : 'var(--heart-empty)'}">♥</span>`
+    ).join('');
+    const remaining = Math.max(0, selectedKid.goal - balance).toFixed(2);
+    const editBtn   = !locked
+      ? `<button class="btn-goal" style="width:auto;padding:6px 10px;font-size:7px" onclick="openGoal()">✏ EDIT</button>`
+      : '';
+    items.push(`<li class="log-entry quest" style="flex-wrap:wrap;gap:8px">
+      <span style="font-size:14px">⚔</span>
+      <span class="log-quest-title">
+        ${escHtml(selectedKid.goalName || 'Quest')}
+        <span style="display:block;margin-top:4px">${hearts}</span>
+      </span>
+      <span class="log-quest-progress">$${remaining} to go</span>
+      ${editBtn}
+    </li>`);
+  } else {
+    const setBtn = !locked
+      ? `<button class="btn-goal" style="width:auto;padding:6px 10px;font-size:7px;margin-left:auto" onclick="openGoal()">+ SET QUEST</button>`
+      : '';
+    items.push(`<li class="log-entry quest" style="opacity:0.5">
+      <span style="font-size:14px">⚔</span>
+      <span class="log-quest-title" style="color:#667">No active quest</span>
+      ${setBtn}
+    </li>`);
+  }
+
+  if (filtered.length) {
+    items.push(...filtered.slice(0, 20).map(tx => {
+      const amt       = parseFloat(tx.amount);
+      const earn      = amt >= 0;
+      const date      = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString() : '';
+      const clickable = !tx.pending && !locked;
+      return `<li class="log-entry${tx.pending ? ' pending' : ''}${clickable ? ' editable' : ''}"
+        ${clickable ? `onclick="openEditTx(${tx.rowIndex})" title="Tap to edit"` : ''}>
+        <span class="log-amount ${earn ? 'earn' : 'spend'}">${earn ? '+' : ''}$${Math.abs(amt).toFixed(2)}</span>
+        <span class="log-desc">${escHtml(tx.description || '')}</span>
+        <span class="log-date">${date}${clickable ? ' ✏' : ''}</span>
+      </li>`;
+    }));
+  } else {
+    items.push('<li class="log-empty">No entries yet.</li>');
+  }
 
   list.innerHTML = items.join('');
 }
@@ -1009,11 +1019,9 @@ async function submitAddKid() {
 
 // ── SET GOAL ───────────────────────────────────────────────
 function openGoal() {
-  if (!selectedKid) { showError('Select a hero first!'); return; }
-  if (selectedKid.goal) {
-    document.getElementById('goal-name').value = selectedKid.goalName || '';
-    document.getElementById('goal-amount').value = selectedKid.goal || '';
-  }
+  if (!selectedKid) return;
+  document.getElementById('goal-name').value = selectedKid.goalName || '';
+  document.getElementById('goal-amount').value = selectedKid.goal || '';
   document.getElementById('goal-modal').classList.add('open');
 }
 function closeGoal() { document.getElementById('goal-modal').classList.remove('open'); }
@@ -1027,7 +1035,7 @@ async function submitGoal() {
     const res = await api({ action: 'setGoal', name: selectedKid.name, goal, goalName });
     if (res.error) throw new Error(res.error);
     closeGoal();
-    notify(`Goal set: ${goalName} ($${goal})`);
+    notify(`Quest set: ${goalName} ($${goal})`);
     await loadData();
   } catch (e) {
     showError(e.message);
