@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Hyrulean Treasury</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
@@ -23,12 +23,17 @@
   --text: #e8d5a3;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { height: 100%; }
 body {
   font-family: 'Press Start 2P', monospace;
   background: var(--bg);
   color: var(--text);
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   font-size: 10px;
+  display: flex;
+  flex-direction: column;
   background-image:
     radial-gradient(ellipse at 20% 20%, rgba(34,139,34,0.08) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 80%, rgba(255,215,0,0.05) 0%, transparent 60%);
@@ -36,267 +41,298 @@ body {
 
 /* ── HEADER ── */
 header {
+  flex-shrink: 0;
   text-align: center;
-  padding: 24px 16px 16px;
+  padding: 10px 16px 8px;
   border-bottom: 2px solid var(--border);
   position: relative;
 }
 .triforce {
-  font-size: 28px;
+  font-size: 20px;
   line-height: 1;
   color: var(--gold);
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   text-shadow: 0 0 20px rgba(255,215,0,0.5);
 }
 header h1 {
-  font-size: 18px;
+  font-size: 14px;
   color: var(--gold);
   text-shadow: 0 0 10px rgba(255,215,0,0.4), 2px 2px 0 #000;
   letter-spacing: 2px;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
 }
 header p {
-  font-size: 7px;
+  font-size: 6px;
   color: #8899aa;
-  margin-bottom: 4px;
 }
 .gear-btn {
   position: absolute;
-  top: 20px;
-  right: 16px;
+  top: 12px;
+  right: 12px;
   background: none;
   border: 1px solid var(--border);
   color: var(--gold);
   font-family: inherit;
   font-size: 14px;
-  padding: 6px 10px;
+  padding: 5px 9px;
   cursor: pointer;
   border-radius: 4px;
   transition: background 0.2s;
+  line-height: 1;
 }
 .gear-btn:hover { background: var(--border); }
+.lock-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: none;
+  border: 1px solid var(--border);
+  color: #889;
+  font-family: inherit;
+  font-size: 6px;
+  padding: 5px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.lock-btn:hover { border-color: var(--gold); color: var(--gold); }
 
-/* ── MAIN ── */
-main { padding: 20px 16px; max-width: 960px; margin: 0 auto; }
+/* ── KID MODE BANNER ── */
+#kid-mode-banner {
+  flex-shrink: 0;
+  display: none;
+  background: rgba(255,215,0,0.08);
+  border-bottom: 1px solid rgba(255,215,0,0.3);
+  text-align: center;
+  padding: 5px;
+  font-size: 7px;
+  color: var(--gold);
+}
 
-/* ── KID CARDS ROW ── */
+/* ── MAIN LAYOUT ── */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 10px 12px 0;
+}
+
+/* ── KIDS SECTION ── */
+.kids-section { flex-shrink: 0; margin-bottom: 6px; }
 .kids-row {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   overflow-x: auto;
-  padding-bottom: 8px;
-  margin-bottom: 24px;
+  padding-bottom: 6px;
 }
 .kid-card {
-  min-width: 180px;
+  min-width: 155px;
   background: var(--card-bg);
   border: 2px solid var(--border);
+  border-top-width: 3px;
   border-radius: 8px;
-  padding: 14px 12px;
+  padding: 12px 10px 10px;
   cursor: pointer;
-  transition: border-color 0.2s, transform 0.1s, box-shadow 0.2s;
+  transition: transform 0.1s, box-shadow 0.2s;
   flex-shrink: 0;
+  position: relative;
 }
-.kid-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(255,215,0,0.15); }
+.kid-card:hover { transform: translateY(-2px); }
 .kid-card.selected {
-  border-color: var(--gold);
-  box-shadow: 0 0 16px rgba(255,215,0,0.3);
+  box-shadow: 0 0 0 2px var(--gold), 0 0 18px rgba(255,215,0,0.25);
 }
 .kid-card .kid-name {
-  font-size: 9px;
+  font-size: 8px;
   color: var(--gold);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 1px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding-right: 16px;
 }
 .kid-card .balance-number {
-  font-size: 22px;
+  font-size: 20px;
   color: #fff;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 .kid-card .balance-label {
-  font-size: 7px;
+  font-size: 6px;
   color: var(--gold);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 .rupee-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-bottom: 10px;
-  min-height: 18px;
+  gap: 3px;
+  margin-bottom: 8px;
+  min-height: 16px;
 }
 .rupee {
-  width: 14px;
-  height: 20px;
+  width: 12px;
+  height: 18px;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   display: inline-block;
 }
 .hearts-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
-  margin-bottom: 6px;
+  gap: 2px;
+  margin-bottom: 5px;
 }
-.heart { font-size: 12px; }
+.heart { font-size: 10px; }
 .heart.full { color: var(--heart-full); }
 .heart.empty { color: var(--heart-empty); }
 .goal-label {
-  font-size: 6px;
-  color: #667;
+  font-size: 8px;
+  color: #889;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.kid-delete-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: none;
+  border: none;
+  color: #334;
+  font-size: 9px;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-family: inherit;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.kid-delete-btn:hover { color: var(--red-r); }
 .add-kid-card {
-  min-width: 120px;
+  min-width: 100px;
   background: transparent;
   border: 2px dashed var(--border);
   border-radius: 8px;
-  padding: 14px 12px;
+  padding: 12px 10px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   color: #556;
   font-family: inherit;
-  font-size: 8px;
+  font-size: 7px;
   transition: border-color 0.2s, color 0.2s;
+  flex-shrink: 0;
 }
 .add-kid-card:hover { border-color: var(--gold); color: var(--gold); }
-.add-kid-card .plus { font-size: 24px; line-height: 1; }
+.add-kid-card .plus { font-size: 20px; line-height: 1; }
 
-/* ── TRANSACTION PANEL ── */
-#tx-panel {
-  background: var(--card-bg);
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 24px;
-  display: none;
+/* ── CONTRIBUTE BAR ── */
+.contribute-bar {
+  margin-top: 6px;
+  text-align: center;
 }
-#tx-panel.visible { display: block; }
-#tx-panel h2 {
-  font-size: 11px;
-  color: var(--gold);
-  margin-bottom: 16px;
-}
-.earn-spend-toggle {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.toggle-btn {
-  flex: 1;
-  padding: 10px;
-  border: 2px solid var(--border);
-  background: none;
-  color: var(--text);
+.btn-contribute {
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid #2a3a5c;
+  color: #5a7a9a;
   font-family: inherit;
-  font-size: 9px;
+  font-size: 6px;
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.2s;
 }
-.toggle-btn.earn.active { border-color: var(--green-r); color: var(--green-r); background: rgba(46,204,113,0.1); }
-.toggle-btn.spend.active { border-color: var(--red-r); color: var(--red-r); background: rgba(231,76,60,0.1); }
-.tx-fields { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
-.tx-fields input {
+.btn-contribute:hover { border-color: var(--blue-r); color: var(--blue-r); }
+
+/* ── SCROLL AREA ── */
+.scroll-area {
   flex: 1;
-  min-width: 100px;
-  padding: 10px;
-  background: #0d1117;
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 9px;
-  border-radius: 4px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 16px;
 }
-.tx-fields input:focus { outline: none; border-color: var(--gold); }
-.presets {
+
+/* ── QUEST LOG ── */
+.quest-log-header {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0 10px;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 5;
 }
-.preset-btn {
-  padding: 6px 10px;
-  background: #0d1117;
-  border: 1px solid var(--border);
-  color: #889;
+.quest-log-header h2 { font-size: 10px; color: var(--gold); }
+.btn-add-rupees {
+  padding: 7px 12px;
+  background: linear-gradient(135deg, #2a4a1a, #1a3a0a);
+  border: 2px solid var(--gold);
+  color: var(--gold);
   font-family: inherit;
   font-size: 7px;
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.2s;
 }
-.preset-btn:hover { border-color: var(--gold); color: var(--gold); }
-.tx-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.btn-submit {
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #2a4a1a, #1a3a0a);
-  border: 2px solid var(--gold);
-  color: var(--gold);
-  font-family: inherit;
-  font-size: 9px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s;
-  letter-spacing: 1px;
-}
-.btn-submit:hover { background: linear-gradient(135deg, #3a6a2a, #2a5a1a); box-shadow: 0 0 12px rgba(255,215,0,0.3); }
-.btn-goal {
-  padding: 12px 20px;
-  background: none;
-  border: 1px solid var(--border);
-  color: #889;
-  font-family: inherit;
-  font-size: 8px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-.btn-goal:hover { border-color: var(--purple-r); color: var(--purple-r); }
-
-/* ── QUEST LOG ── */
-#quest-log { margin-bottom: 24px; }
-#quest-log h2 { font-size: 11px; color: var(--gold); margin-bottom: 12px; }
-.log-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.btn-add-rupees:hover { box-shadow: 0 0 10px rgba(255,215,0,0.3); }
+.log-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
 .log-entry {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 4px;
-  padding: 10px 12px;
+  padding: 9px 11px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 8px;
+  gap: 8px;
+  font-size: 7px;
+}
+.log-entry.editable { cursor: pointer; }
+.log-entry.editable:hover { border-color: #3a5a7a; background: #131c2e; }
+.log-entry.editable:hover .edit-hint { color: var(--gold); }
+.quest-entry {
+  background: rgba(255,215,0,0.04);
+  border-color: rgba(255,215,0,0.25);
 }
 .log-amount {
   font-size: 10px;
   font-weight: bold;
-  min-width: 60px;
+  min-width: 58px;
   text-align: right;
+  flex-shrink: 0;
 }
 .log-amount.earn { color: var(--green-r); }
 .log-amount.spend { color: var(--red-r); }
-.log-kid { color: var(--gold); min-width: 70px; }
+.log-kid { color: var(--gold); min-width: 60px; flex-shrink: 0; }
 .log-desc { color: #889; flex: 1; }
-.log-date { color: #445; font-size: 6px; white-space: nowrap; }
-.log-empty { color: #445; font-size: 8px; padding: 20px; text-align: center; }
+.log-date { color: #556; font-size: 8px; white-space: nowrap; flex-shrink: 0; }
+.edit-hint { font-size: 7px; color: #334; flex-shrink: 0; margin-left: 2px; }
+.log-empty { color: #445; font-size: 7px; padding: 16px; text-align: center; }
+.quest-progress-bar {
+  height: 7px;
+  background: #1a2a1a;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 4px 0;
+}
+.quest-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green-r), var(--gold));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
 
 /* ── MODALS ── */
 .modal-overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.85);
+  background: rgba(0,0,0,0.88);
   z-index: 100;
   align-items: center;
   justify-content: center;
@@ -307,15 +343,15 @@ main { padding: 20px 16px; max-width: 960px; margin: 0 auto; }
   background: var(--card-bg);
   border: 2px solid var(--gold);
   border-radius: 8px;
-  padding: 24px;
+  padding: 22px;
   width: 100%;
   max-width: 480px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 0 40px rgba(255,215,0,0.2);
 }
-.modal h2 { font-size: 12px; color: var(--gold); margin-bottom: 16px; }
-.modal label { display: block; font-size: 8px; color: #889; margin-bottom: 4px; margin-top: 12px; }
+.modal h2 { font-size: 11px; color: var(--gold); margin-bottom: 14px; }
+.modal label { display: block; font-size: 7px; color: #889; margin-bottom: 4px; margin-top: 12px; }
 .modal input, .modal select {
   width: 100%;
   padding: 10px;
@@ -323,11 +359,11 @@ main { padding: 20px 16px; max-width: 960px; margin: 0 auto; }
   border: 1px solid var(--border);
   color: var(--text);
   font-family: inherit;
-  font-size: 9px;
+  font-size: 16px;
   border-radius: 4px;
 }
 .modal input:focus, .modal select:focus { outline: none; border-color: var(--gold); }
-.modal-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.modal-actions { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
 .btn-primary {
   flex: 1;
   padding: 12px;
@@ -335,93 +371,64 @@ main { padding: 20px 16px; max-width: 960px; margin: 0 auto; }
   border: 2px solid var(--gold);
   color: var(--gold);
   font-family: inherit;
-  font-size: 9px;
+  font-size: 8px;
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.2s;
 }
 .btn-primary:hover { box-shadow: 0 0 12px rgba(255,215,0,0.3); }
 .btn-secondary {
-  padding: 12px 16px;
+  padding: 12px 14px;
   background: none;
   border: 1px solid var(--border);
   color: #889;
+  font-family: inherit;
+  font-size: 7px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: #889; color: var(--text); }
+.btn-danger {
+  padding: 12px 14px;
+  background: rgba(231,76,60,0.12);
+  border: 1px solid var(--red-r);
+  color: var(--red-r);
+  font-family: inherit;
+  font-size: 7px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.btn-danger:hover { background: rgba(231,76,60,0.25); }
+.earn-spend-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+.toggle-btn {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid var(--border);
+  background: none;
+  color: var(--text);
   font-family: inherit;
   font-size: 8px;
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.2s;
 }
-.btn-secondary:hover { border-color: #889; color: var(--text); }
-.setup-steps {
+.toggle-btn.earn.active { border-color: var(--green-r); color: var(--green-r); background: rgba(46,204,113,0.1); }
+.toggle-btn.spend.active { border-color: var(--red-r); color: var(--red-r); background: rgba(231,76,60,0.1); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.preset-btn {
+  padding: 7px 10px;
+  background: #0d1117;
+  border: 1px solid var(--border);
+  color: #889;
+  font-family: inherit;
   font-size: 7px;
-  color: #778;
-  line-height: 2;
-  margin-bottom: 8px;
-  background: #0d1117;
-  border: 1px solid var(--border);
+  cursor: pointer;
   border-radius: 4px;
-  padding: 12px;
+  transition: all 0.2s;
 }
-.setup-steps a { color: var(--blue-r); }
-code {
-  background: #0d1117;
-  border: 1px solid var(--border);
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-family: monospace;
-  font-size: 9px;
-  color: var(--green-r);
-  display: block;
-  margin: 6px 0;
-  word-break: break-all;
-}
-
-/* ── NOTIFICATION ── */
-#notif {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-80px);
-  background: var(--card-bg);
-  border: 2px solid var(--gold);
-  border-radius: 6px;
-  padding: 12px 20px;
-  font-size: 9px;
-  color: var(--gold);
-  z-index: 200;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 4px 24px rgba(255,215,0,0.3);
-  white-space: nowrap;
-}
-#notif.show { transform: translateX(-50%) translateY(0); }
-
-/* ── SPINNER ── */
-.spinner {
-  display: none;
-  width: 24px;
-  height: 24px;
-  border: 3px solid var(--border);
-  border-top-color: var(--gold);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 20px auto;
-}
-.spinner.visible { display: block; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── ERROR BANNER ── */
-#error-banner {
-  display: none;
-  background: rgba(231,76,60,0.15);
-  border: 1px solid var(--red-r);
-  color: var(--red-r);
-  padding: 10px 16px;
-  font-size: 8px;
-  border-radius: 4px;
-  margin-bottom: 16px;
-}
-#error-banner.visible { display: block; }
+.preset-btn:hover { border-color: var(--gold); color: var(--gold); }
 
 /* ── COLOR SWATCHES ── */
 .color-options { display: flex; gap: 8px; margin-top: 6px; }
@@ -436,88 +443,135 @@ code {
 .color-swatch:hover { transform: scale(1.1); }
 .color-swatch.selected { border-color: #fff; }
 
-@media (max-width: 480px) {
-  header h1 { font-size: 13px; }
-  .kid-card { min-width: 150px; }
-  .balance-number { font-size: 18px !important; }
+/* ── NOTIFICATION ── */
+#notif {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-80px);
+  background: var(--card-bg);
+  border: 2px solid var(--gold);
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 8px;
+  color: var(--gold);
+  z-index: 200;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 24px rgba(255,215,0,0.3);
+  white-space: nowrap;
+  pointer-events: none;
+}
+#notif.show { transform: translateX(-50%) translateY(0); }
+
+/* ── SPINNER ── */
+.spinner {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  z-index: 300;
+}
+.spinner.visible { display: block; }
+@keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+@media (max-width: 420px) {
+  header h1 { font-size: 11px; }
+  .kid-card { min-width: 140px; }
 }
 </style>
 </head>
 <body>
 
 <header>
+  <button class="lock-btn" id="lock-btn" onclick="toggleLock()">🔒 KID MODE</button>
   <span class="triforce">△<br>△△</span>
   <h1>HYRULEAN TREASURY</h1>
   <p>It's dangerous to go broke!</p>
-  <button class="gear-btn" onclick="openSetup()" title="Settings">⚙</button>
+  <button class="gear-btn" id="gear-btn" onclick="openSetup()" title="Settings">⚙</button>
 </header>
 
+<div id="kid-mode-banner">👦 KID VIEW — READ ONLY</div>
 <div id="notif"></div>
+<div class="spinner" id="spinner"></div>
 
 <main>
-  <div id="error-banner"></div>
-  <div class="spinner" id="spinner"></div>
-
-  <!-- Kid Cards -->
-  <div class="kids-row" id="kids-row">
-    <button class="add-kid-card" onclick="openAddKid()">
-      <span class="plus">+</span>
-      <span>ADD HERO</span>
-    </button>
+  <div class="kids-section">
+    <div class="kids-row" id="kids-row"></div>
+    <div class="contribute-bar">
+      <button class="btn-contribute" onclick="openContribute()">💰 SEND RUPEES VIA PAYPAL</button>
+    </div>
   </div>
 
-  <!-- Transaction Panel -->
-  <div id="tx-panel">
-    <h2 id="tx-title">SELECT A HERO</h2>
+  <div class="scroll-area">
+    <div id="quest-log">
+      <div class="quest-log-header">
+        <h2>📜 QUEST LOG</h2>
+        <button class="btn-add-rupees" id="btn-add-rupees" onclick="openTxModal()" style="display:none">+ ADD / SPEND</button>
+      </div>
+      <ul class="log-list" id="log-list">
+        <li class="log-empty">Select a hero to begin...</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<!-- Transaction Modal -->
+<div class="modal-overlay" id="tx-modal">
+  <div class="modal">
+    <h2 id="tx-modal-title">💰 TREASURY</h2>
     <div class="earn-spend-toggle">
       <button class="toggle-btn earn active" id="btn-earn" onclick="setMode('earn')">▲ EARN</button>
       <button class="toggle-btn spend" id="btn-spend" onclick="setMode('spend')">▼ SPEND</button>
     </div>
-    <div class="tx-fields">
-      <input type="number" id="tx-amount" placeholder="Amount ($)" min="0.01" step="0.01">
-      <input type="text" id="tx-desc" placeholder="Description...">
-    </div>
+    <label>Amount ($)</label>
+    <input type="number" id="tx-amount" placeholder="0.00" min="0.01" step="0.01" inputmode="decimal" oninput="updateSubmitLabel()">
+    <label>Description</label>
+    <input type="text" id="tx-desc" placeholder="What for?">
     <div class="presets">
-      <button class="preset-btn" onclick="setPreset(5,'Weekly Allowance')">💰 Allowance $5</button>
-      <button class="preset-btn" onclick="setPreset(10,'Weekly Allowance')">💰 Allowance $10</button>
-      <button class="preset-btn" onclick="setPreset(1,'Chore Completed')">⚔ Chore $1</button>
-      <button class="preset-btn" onclick="setPreset(2,'Chore Completed')">⚔ Chore $2</button>
-      <button class="preset-btn" onclick="setPreset(5,'Chore Completed')">⚔ Chore $5</button>
+      <button class="preset-btn" onclick="setPreset(5,'Weekly Allowance')">💰 $5 Allowance</button>
+      <button class="preset-btn" onclick="setPreset(10,'Weekly Allowance')">💰 $10 Allowance</button>
+      <button class="preset-btn" onclick="setPreset(1,'Chore Completed')">⚔ $1 Chore</button>
+      <button class="preset-btn" onclick="setPreset(2,'Chore Completed')">⚔ $2 Chore</button>
+      <button class="preset-btn" onclick="setPreset(5,'Chore Completed')">⚔ $5 Chore</button>
       <button class="preset-btn" onclick="setPreset(0,'Gift')">🎁 Gift...</button>
     </div>
-    <div class="tx-actions">
-      <button class="btn-submit" onclick="submitTransaction()">▶ OPEN CHEST</button>
-      <button class="btn-goal" onclick="openGoal()">♥ SET GOAL</button>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn-primary" id="btn-submit-tx" onclick="submitTransaction()">▶ OPEN CHEST</button>
+      <button class="btn-secondary" onclick="closeTxModal()">CANCEL</button>
     </div>
   </div>
+</div>
 
-  <!-- Quest Log -->
-  <div id="quest-log">
-    <h2>📜 QUEST LOG</h2>
-    <ul class="log-list" id="log-list">
-      <li class="log-empty">No quests completed yet...</li>
-    </ul>
+<!-- PIN Modal -->
+<div class="modal-overlay" id="pin-modal">
+  <div class="modal" style="max-width:320px">
+    <h2>🔐 PARENT MODE</h2>
+    <p style="font-size:7px;color:#889;margin-bottom:14px">Enter PIN to unlock parent controls</p>
+    <label>PIN</label>
+    <input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" placeholder="• • • •" maxlength="8" onkeydown="if(event.key==='Enter')submitPin()">
+    <div id="pin-error" style="color:var(--red-r);font-size:7px;margin-top:8px;display:none">✗ Incorrect PIN</div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="submitPin()">UNLOCK</button>
+      <button class="btn-secondary" onclick="closePinModal()">CANCEL</button>
+    </div>
   </div>
-</main>
+</div>
 
 <!-- Setup Modal -->
 <div class="modal-overlay" id="setup-modal">
   <div class="modal">
     <h2>⚙ TREASURY SETUP</h2>
-    <div class="setup-steps">
-      <strong style="color:var(--gold)">First-time setup (5 min):</strong><br><br>
-      1. Create a new Google Sheet at sheets.google.com<br>
-      2. Go to <strong>Extensions → Apps Script</strong><br>
-      3. Delete existing code, paste the contents of <code>apps-script.gs</code> from this project<br>
-      4. Click <strong>Deploy → New Deployment</strong><br>
-      5. Type: <strong>Web app</strong><br>
-      6. Execute as: <strong>Me</strong><br>
-      7. Who has access: <strong>Anyone</strong><br>
-      8. Click Deploy → copy the URL<br>
-      9. Paste it below ↓
-    </div>
-    <label>Web App URL</label>
+    <label>Google Apps Script Web App URL</label>
     <input type="url" id="script-url-input" placeholder="https://script.google.com/macros/s/.../exec">
+    <label>Parent PIN (4–8 digits)</label>
+    <input type="text" id="pin-setup-input" inputmode="numeric" pattern="[0-9]*" placeholder="Leave blank to keep current" maxlength="8">
     <div class="modal-actions">
       <button class="btn-primary" onclick="saveSetup()">SAVE &amp; CONNECT</button>
       <button class="btn-secondary" onclick="closeSetup()">CANCEL</button>
@@ -546,28 +600,68 @@ code {
   </div>
 </div>
 
-<!-- Set Goal Modal -->
+<!-- Edit Transaction Modal -->
+<div class="modal-overlay" id="edit-tx-modal">
+  <div class="modal">
+    <h2>✏ EDIT ENTRY</h2>
+    <div id="edit-tx-date" style="font-size:7px;color:#667;margin-bottom:14px"></div>
+    <label>Amount (use negative for a spend, e.g. -5)</label>
+    <input type="number" id="edit-tx-amount" step="0.01" inputmode="decimal">
+    <label>Description</label>
+    <input type="text" id="edit-tx-desc">
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="submitEditTx()">SAVE</button>
+      <button class="btn-danger" onclick="submitDeleteTx()">DELETE</button>
+      <button class="btn-secondary" onclick="closeEditTx()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Contribute Modal -->
+<div class="modal-overlay" id="contribute-modal">
+  <div class="modal">
+    <h2>💰 SEND RUPEES</h2>
+    <p style="font-size:7px;color:#889;margin-bottom:4px">Family &amp; friends can contribute via PayPal. The parent manually adds the deposit to the app after receiving payment.</p>
+    <label>Select Hero</label>
+    <select id="contribute-kid" onchange="onContributeKidChange()">
+      <option value="">— Choose Hero —</option>
+    </select>
+    <div id="contribute-goal-info" style="font-size:7px;color:#889;margin-top:8px;display:none"></div>
+    <label>Amount</label>
+    <div class="presets">
+      <button class="preset-btn" onclick="setContributeAmount(5)">$5</button>
+      <button class="preset-btn" onclick="setContributeAmount(10)">$10</button>
+      <button class="preset-btn" id="btn-remaining" onclick="setContributeRemaining()" style="display:none">Remaining</button>
+    </div>
+    <input type="number" id="contribute-amount" placeholder="Or enter amount..." min="1" step="1" inputmode="decimal" style="margin-top:8px">
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="preparePaypal()">💸 SEND VIA PAYPAL</button>
+      <button class="btn-secondary" onclick="closeContribute()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Goal / Quest Modal -->
 <div class="modal-overlay" id="goal-modal">
   <div class="modal">
-    <h2>♥ SET SAVINGS GOAL</h2>
+    <h2 id="goal-modal-title">🗡 SET ACTIVE QUEST</h2>
     <label>What are you saving for?</label>
     <input type="text" id="goal-name" placeholder="e.g. Nintendo Switch, LEGO set...">
     <label>Goal Amount ($)</label>
-    <input type="number" id="goal-amount" placeholder="e.g. 299" min="1" step="1">
+    <input type="number" id="goal-amount" placeholder="e.g. 299" min="1" step="1" inputmode="decimal">
     <div class="modal-actions">
-      <button class="btn-primary" onclick="submitGoal()">SET GOAL</button>
+      <button class="btn-primary" onclick="submitGoal()">SAVE QUEST</button>
+      <button class="btn-danger" id="btn-clear-goal" onclick="clearGoal()" style="display:none">CLEAR</button>
       <button class="btn-secondary" onclick="closeGoal()">CANCEL</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── STATE ──────────────────────────────────────────────────
-let scriptUrl = localStorage.getItem('zelda_allowance_script_url') || '';
-let kids = [];
-let transactions = [];
-let selectedKid = null;
-let txMode = 'earn'; // 'earn' | 'spend'
+// ── CONSTANTS ────────────────────────────────────────────────
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsMclqgQw3jTkw7F6g7NoHtcuvMM5pBU8rSwnDLgeC75he34z6G0RIEYt3Ku1eLnHhbA/exec';
+const PAYPAL_EMAIL       = 'jtravisnorton@gmail.com';
+const DEFAULT_PIN        = '1234';
 
 const RUPEE_VALUES = [
   { value: 300, color: '#f1c40f', label: 'Gold'   },
@@ -577,7 +671,6 @@ const RUPEE_VALUES = [
   { value:   5, color: '#3498db', label: 'Blue'   },
   { value:   1, color: '#2ecc71', label: 'Green'  },
 ];
-
 const COLOR_MAP = {
   green:  '#2ecc71',
   blue:   '#3498db',
@@ -586,35 +679,39 @@ const COLOR_MAP = {
   gold:   '#f1c40f',
 };
 
-// ── INIT ───────────────────────────────────────────────────
+// ── STATE ────────────────────────────────────────────────────
+let scriptUrl  = localStorage.getItem('zelda_allowance_script_url') || DEFAULT_SCRIPT_URL;
+let parentPin  = localStorage.getItem('zelda_parent_pin') || DEFAULT_PIN;
+let isKidMode  = localStorage.getItem('zelda_kid_mode') === 'true';
+let kids         = [];
+let transactions = [];
+let selectedKid  = null;
+let txMode       = 'earn';
+let editingTx    = null;
+
+// ── INIT ─────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  if (!scriptUrl) {
-    openSetup();
-  } else {
-    loadData();
-  }
+  applyLock();
+  loadData();
 });
 
-// ── API ────────────────────────────────────────────────────
+// ── API ──────────────────────────────────────────────────────
 async function api(params) {
   if (!scriptUrl) { openSetup(); return null; }
   const url = scriptUrl + '?' + new URLSearchParams(params).toString();
-  const res = await fetch(url);
+  const res  = await fetch(url);
   const text = await res.text();
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error('Invalid response from server. Check your Apps Script URL.');
-  }
+  try { return JSON.parse(text); }
+  catch { throw new Error('Invalid server response. Check your Apps Script URL.'); }
 }
 
 async function loadData() {
   showSpinner(true);
-  hideError();
   try {
     const data = await api({ action: 'getData' });
+    if (!data) return;
     if (data.error) throw new Error(data.error);
-    kids = data.kids || [];
+    kids         = data.kids         || [];
     transactions = data.transactions || [];
     renderKids();
     renderLog();
@@ -625,40 +722,95 @@ async function loadData() {
   }
 }
 
-// ── RENDER: KID CARDS ──────────────────────────────────────
+// ── LOCK / PIN ───────────────────────────────────────────────
+function applyLock() {
+  isKidMode = localStorage.getItem('zelda_kid_mode') === 'true';
+  document.getElementById('lock-btn').textContent  = isKidMode ? '🔓 PARENT MODE' : '🔒 KID MODE';
+  document.getElementById('kid-mode-banner').style.display = isKidMode ? 'block' : 'none';
+  document.getElementById('gear-btn').style.display        = isKidMode ? 'none'  : '';
+  renderKids();
+  renderLog();
+}
+
+function toggleLock() {
+  if (isKidMode) {
+    document.getElementById('pin-input').value          = '';
+    document.getElementById('pin-error').style.display  = 'none';
+    document.getElementById('pin-modal').classList.add('open');
+  } else {
+    isKidMode = true;
+    localStorage.setItem('zelda_kid_mode', 'true');
+    applyLock();
+    notify('Kid mode enabled');
+  }
+}
+
+function submitPin() {
+  const entered = document.getElementById('pin-input').value;
+  if (entered === parentPin) {
+    isKidMode = false;
+    localStorage.setItem('zelda_kid_mode', 'false');
+    closePinModal();
+    applyLock();
+    notify('Parent mode unlocked ◆');
+  } else {
+    document.getElementById('pin-error').style.display = 'block';
+  }
+}
+function closePinModal() { document.getElementById('pin-modal').classList.remove('open'); }
+
+// ── SETUP ────────────────────────────────────────────────────
+function openSetup() {
+  document.getElementById('script-url-input').value = scriptUrl;
+  document.getElementById('pin-setup-input').value  = '';
+  document.getElementById('setup-modal').classList.add('open');
+}
+function closeSetup() { document.getElementById('setup-modal').classList.remove('open'); }
+
+function saveSetup() {
+  const url = document.getElementById('script-url-input').value.trim();
+  const pin = document.getElementById('pin-setup-input').value.trim();
+  if (!url) { showError('Paste your Apps Script URL'); return; }
+  scriptUrl = url;
+  localStorage.setItem('zelda_allowance_script_url', url);
+  if (pin && /^\d{4,8}$/.test(pin)) {
+    parentPin = pin;
+    localStorage.setItem('zelda_parent_pin', pin);
+  }
+  closeSetup();
+  loadData();
+}
+
+// ── RENDER: KID CARDS ────────────────────────────────────────
 function renderKids() {
   const row = document.getElementById('kids-row');
-  // Keep the Add Hero button
   row.innerHTML = '';
-  kids.forEach(kid => {
-    row.appendChild(makeKidCard(kid));
-  });
-  const addBtn = document.createElement('button');
-  addBtn.className = 'add-kid-card';
-  addBtn.onclick = openAddKid;
-  addBtn.innerHTML = '<span class="plus">+</span><span>ADD HERO</span>';
-  row.appendChild(addBtn);
-
-  // Re-select if one was selected
+  kids.forEach(kid => row.appendChild(makeKidCard(kid)));
+  if (!isKidMode) {
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-kid-card';
+    addBtn.onclick   = openAddKid;
+    addBtn.innerHTML = '<span class="plus">+</span><span>ADD HERO</span>';
+    row.appendChild(addBtn);
+  }
   if (selectedKid) {
     const still = kids.find(k => k.name === selectedKid.name);
-    if (still) { selectedKid = still; updateTxPanel(); }
+    if (still) selectedKid = still;
   }
 }
 
 function makeKidCard(kid) {
-  const card = document.createElement('div');
-  card.className = 'kid-card' + (selectedKid && selectedKid.name === kid.name ? ' selected' : '');
-  card.onclick = () => selectKid(kid);
-
+  const card        = document.createElement('div');
+  card.className    = 'kid-card' + (selectedKid && selectedKid.name === kid.name ? ' selected' : '');
+  card.onclick      = () => selectKid(kid, card);
   const accentColor = COLOR_MAP[kid.color] || COLOR_MAP.green;
   card.style.borderTopColor = accentColor;
 
-  const balance = Math.round(kid.balance * 100) / 100;
-  const rupeeHtml = rupeeBreakdown(balance);
-  const heartsHtml = heartDisplay(balance, kid.goal);
-  const goalText = kid.goal > 0
-    ? `<div class="goal-label">${escHtml(kid.goalName || 'Savings Goal')}: $${kid.goal}</div>`
+  const balance     = Math.round(kid.balance * 100) / 100;
+  const rupeeHtml   = rupeeBreakdown(balance);
+  const heartsHtml  = heartDisplay(balance, kid.goal);
+  const goalText    = kid.goal > 0
+    ? `<div class="goal-label">${escHtml(kid.goalName || 'Quest')}: $${kid.goal.toFixed(2)}</div>`
     : '';
 
   card.innerHTML = `
@@ -669,18 +821,27 @@ function makeKidCard(kid) {
     <div class="hearts-row">${heartsHtml}</div>
     ${goalText}
   `;
+
+  if (!isKidMode) {
+    const del     = document.createElement('button');
+    del.className = 'kid-delete-btn';
+    del.textContent = '✕';
+    del.title     = 'Remove hero';
+    del.onclick   = (e) => { e.stopPropagation(); removeKid(kid); };
+    card.appendChild(del);
+  }
   return card;
 }
 
 function rupeeBreakdown(amount) {
   if (amount <= 0) return '';
   let remaining = Math.floor(Math.abs(amount));
-  const parts = [];
+  const parts   = [];
   for (const r of RUPEE_VALUES) {
     const count = Math.floor(remaining / r.value);
     if (count > 0) {
       for (let i = 0; i < Math.min(count, 6); i++) {
-        parts.push(`<span class="rupee" style="background:${r.color}" title="${r.label} Rupee (${r.value})"></span>`);
+        parts.push(`<span class="rupee" style="background:${r.color}" title="${r.label} Rupee"></span>`);
       }
       remaining -= count * r.value;
     }
@@ -690,9 +851,9 @@ function rupeeBreakdown(amount) {
 
 function heartDisplay(balance, goal) {
   if (!goal || goal <= 0) return '';
-  const pct = Math.min(balance / goal, 1);
+  const pct        = Math.min(balance / goal, 1);
   const totalHearts = 10;
-  const fullHearts = Math.round(pct * totalHearts);
+  const fullHearts  = Math.round(pct * totalHearts);
   let html = '';
   for (let i = 0; i < totalHearts; i++) {
     html += `<span class="heart ${i < fullHearts ? 'full' : 'empty'}">♥</span>`;
@@ -700,98 +861,219 @@ function heartDisplay(balance, goal) {
   return html;
 }
 
-// ── RENDER: QUEST LOG ──────────────────────────────────────
-function renderLog() {
-  const list = document.getElementById('log-list');
-  if (!transactions.length) {
-    list.innerHTML = '<li class="log-empty">No quests completed yet...</li>';
-    return;
-  }
-  list.innerHTML = transactions.slice(0, 20).map(tx => {
-    const amt = parseFloat(tx.amount);
-    const earn = amt >= 0;
-    const date = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString() : '';
-    return `<li class="log-entry">
-      <span class="log-amount ${earn ? 'earn' : 'spend'}">${earn ? '+' : ''}$${Math.abs(amt).toFixed(2)}</span>
-      <span class="log-kid">${escHtml(tx.kid)}</span>
-      <span class="log-desc">${escHtml(tx.description || '')}</span>
-      <span class="log-date">${date}</span>
-    </li>`;
-  }).join('');
-}
-
-// ── SELECT KID ─────────────────────────────────────────────
-function selectKid(kid) {
+// ── SELECT KID ───────────────────────────────────────────────
+function selectKid(kid, cardEl) {
   selectedKid = kid;
   document.querySelectorAll('.kid-card').forEach(c => c.classList.remove('selected'));
-  event.currentTarget.classList.add('selected');
-  updateTxPanel();
+  if (cardEl) cardEl.classList.add('selected');
+  renderLog();
 }
 
-function updateTxPanel() {
-  if (!selectedKid) return;
-  const panel = document.getElementById('tx-panel');
-  panel.classList.add('visible');
-  document.getElementById('tx-title').textContent =
-    selectedKid.name.toUpperCase() + "'S TREASURY";
+// ── RENDER: QUEST LOG ────────────────────────────────────────
+function renderLog() {
+  const list   = document.getElementById('log-list');
+  const addBtn = document.getElementById('btn-add-rupees');
+  if (addBtn) addBtn.style.display = (selectedKid && !isKidMode) ? '' : 'none';
+
+  if (!selectedKid) {
+    list.innerHTML = '<li class="log-empty">Select a hero to begin...</li>';
+    return;
+  }
+
+  const filteredTx = transactions.filter(tx => tx.kid === selectedKid.name);
+  const items      = [];
+
+  // Quest card
+  if (selectedKid.goal > 0) {
+    const pct        = Math.min(selectedKid.balance / selectedKid.goal, 1);
+    const pctDisplay = Math.round(pct * 100);
+    const remaining  = Math.max(selectedKid.goal - selectedKid.balance, 0);
+    items.push(`
+      <li class="log-entry quest-entry" data-type="quest">
+        <span style="font-size:18px;flex-shrink:0">🗡</span>
+        <div style="flex:1;overflow:hidden">
+          <div style="font-size:9px;color:var(--gold);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(selectedKid.goalName || 'ACTIVE QUEST')}</div>
+          <div class="quest-progress-bar"><div class="quest-progress-fill" style="width:${pctDisplay}%"></div></div>
+          <div style="font-size:7px;color:#889;margin-top:4px">$${selectedKid.balance.toFixed(2)} / $${selectedKid.goal.toFixed(2)} · ${pctDisplay}% · $${remaining.toFixed(2)} to go</div>
+        </div>
+        ${!isKidMode ? '<span class="edit-hint">✏</span>' : ''}
+      </li>
+    `);
+  } else if (!isKidMode) {
+    items.push(`
+      <li class="log-entry quest-entry" data-type="quest-empty" style="cursor:pointer">
+        <span style="font-size:18px;flex-shrink:0;opacity:0.4">🗡</span>
+        <div style="flex:1;color:#556;font-size:7px">No active quest<br><span style="color:#445;font-size:6px">Tap to set a savings goal</span></div>
+      </li>
+    `);
+  }
+
+  if (filteredTx.length === 0) {
+    items.push('<li class="log-empty">No entries yet for this hero...</li>');
+  } else {
+    filteredTx.slice(0, 20).forEach(tx => {
+      const amt     = parseFloat(tx.amount);
+      const earn    = amt >= 0;
+      const date    = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString() : '';
+      const canEdit = !isKidMode && tx.rowIndex > 0;
+      items.push(`
+        <li class="log-entry${canEdit ? ' editable' : ''}" data-rowidx="${tx.rowIndex || 0}">
+          <span class="log-amount ${earn ? 'earn' : 'spend'}">${earn ? '+' : ''}$${Math.abs(amt).toFixed(2)}</span>
+          <span class="log-kid">${escHtml(tx.kid)}</span>
+          <span class="log-desc">${escHtml(tx.description || '')}</span>
+          <span class="log-date">${date}</span>
+          ${canEdit ? '<span class="edit-hint">✏</span>' : ''}
+        </li>
+      `);
+    });
+  }
+
+  list.innerHTML = items.join('');
+
+  // Quest click handler
+  const questEl = list.querySelector('[data-type="quest"], [data-type="quest-empty"]');
+  if (questEl && !isKidMode) questEl.onclick = openGoal;
+
+  // Edit click handlers
+  if (!isKidMode) {
+    list.querySelectorAll('.log-entry.editable').forEach(li => {
+      const rowIdx = parseInt(li.dataset.rowidx);
+      const tx     = filteredTx.find(t => t.rowIndex === rowIdx);
+      if (tx) li.onclick = () => openEditTx(tx);
+    });
+  }
 }
 
-// ── TRANSACTION ────────────────────────────────────────────
+// ── TRANSACTION MODAL ────────────────────────────────────────
+function openTxModal() {
+  if (!selectedKid || isKidMode) return;
+  document.getElementById('tx-modal-title').textContent = '💰 ' + selectedKid.name.toUpperCase() + "'S TREASURY";
+  document.getElementById('tx-amount').value = '';
+  document.getElementById('tx-desc').value   = '';
+  setMode('earn');
+  document.getElementById('tx-modal').classList.add('open');
+}
+function closeTxModal() { document.getElementById('tx-modal').classList.remove('open'); }
+
 function setMode(mode) {
   txMode = mode;
   document.getElementById('btn-earn').classList.toggle('active', mode === 'earn');
   document.getElementById('btn-spend').classList.toggle('active', mode === 'spend');
+  updateSubmitLabel();
+}
+
+function updateSubmitLabel() {
+  const amt = parseFloat(document.getElementById('tx-amount').value) || 0;
+  const btn = document.getElementById('btn-submit-tx');
+  if (!btn) return;
+  if (txMode === 'earn') {
+    btn.textContent = amt > 0 ? `▶ ADD $${amt.toFixed(2)}` : '▶ OPEN CHEST';
+  } else {
+    btn.textContent = amt > 0 ? `▶ SPEND $${amt.toFixed(2)}` : '▶ SPEND RUPEES';
+  }
 }
 
 function setPreset(amount, desc) {
   document.getElementById('tx-amount').value = amount || '';
-  document.getElementById('tx-desc').value = desc;
+  document.getElementById('tx-desc').value   = desc;
   if (amount === 0) document.getElementById('tx-amount').focus();
+  updateSubmitLabel();
 }
 
 async function submitTransaction() {
-  if (!selectedKid) { showError('Select a hero first!'); return; }
+  if (!selectedKid) return;
   const amtRaw = parseFloat(document.getElementById('tx-amount').value);
-  const desc = document.getElementById('tx-desc').value.trim() || (txMode === 'earn' ? 'Earned' : 'Spent');
+  const desc   = document.getElementById('tx-desc').value.trim() || (txMode === 'earn' ? 'Earned' : 'Spent');
   if (!amtRaw || amtRaw <= 0) { showError('Enter a valid amount.'); return; }
 
   const amount = txMode === 'spend' ? -amtRaw : amtRaw;
-  showSpinner(true);
-  hideError();
+
+  // Optimistic update
+  const oldBalance = selectedKid.balance;
+  selectedKid.balance = oldBalance + amount;
+  const fakeTx = { rowIndex: -1, timestamp: new Date().toISOString(), kid: selectedKid.name, amount, description: desc };
+  transactions.unshift(fakeTx);
+  renderKids();
+  renderLog();
+  closeTxModal();
+
+  if (txMode === 'earn') { playEarn(); notify(`${selectedKid.name} found $${amtRaw.toFixed(2)}! ◆`); }
+  else                   { playSpend(); notify(`${selectedKid.name} spent $${amtRaw.toFixed(2)} ◆`); }
+
   try {
-    const res = await api({
-      action: 'addTransaction',
-      kid: selectedKid.name,
-      amount: amount,
-      description: desc,
-    });
-    if (res.error) throw new Error(res.error);
-    if (txMode === 'earn') {
-      playEarn();
-      notify(`${selectedKid.name} found $${amtRaw.toFixed(2)}! ◆`);
-    } else {
-      playSpend();
-      notify(`${selectedKid.name} spent $${amtRaw.toFixed(2)} ◆`);
-    }
-    document.getElementById('tx-amount').value = '';
-    document.getElementById('tx-desc').value = '';
+    const res = await api({ action: 'addTransaction', kid: selectedKid.name, amount, description: desc });
+    if (res && res.error) throw new Error(res.error);
+  } catch (e) {
+    // Rollback
+    selectedKid.balance = oldBalance;
+    transactions = transactions.filter(t => t !== fakeTx);
+    renderKids();
+    renderLog();
+    showError('Save failed: ' + e.message);
+    return;
+  }
+  await loadData();
+}
+
+// ── EDIT TRANSACTION ─────────────────────────────────────────
+function openEditTx(tx) {
+  if (isKidMode) return;
+  editingTx = tx;
+  const d = tx.timestamp ? new Date(tx.timestamp) : null;
+  document.getElementById('edit-tx-date').textContent = d
+    ? d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+    : '';
+  document.getElementById('edit-tx-amount').value = tx.amount;
+  document.getElementById('edit-tx-desc').value   = tx.description || '';
+  document.getElementById('edit-tx-modal').classList.add('open');
+}
+function closeEditTx() {
+  document.getElementById('edit-tx-modal').classList.remove('open');
+  editingTx = null;
+}
+
+async function submitEditTx() {
+  if (!editingTx) return;
+  const newAmount = parseFloat(document.getElementById('edit-tx-amount').value);
+  const newDesc   = document.getElementById('edit-tx-desc').value.trim();
+  if (isNaN(newAmount)) { showError('Enter a valid amount.'); return; }
+  closeEditTx();
+  showSpinner(true);
+  try {
+    const res = await api({ action: 'editTransaction', rowIndex: editingTx.rowIndex, amount: newAmount, description: newDesc });
+    if (res && res.error) throw new Error(res.error);
+    notify('Entry updated!');
     await loadData();
   } catch (e) {
-    showError(e.message);
-  } finally {
+    showError('Update failed: ' + e.message);
     showSpinner(false);
   }
 }
 
-// ── ADD KID ────────────────────────────────────────────────
-let selectedColor = 'green';
+async function submitDeleteTx() {
+  if (!editingTx) return;
+  if (!confirm('Delete this entry? This cannot be undone.')) return;
+  const tx = editingTx;
+  closeEditTx();
+  showSpinner(true);
+  try {
+    const res = await api({ action: 'deleteTransaction', rowIndex: tx.rowIndex });
+    if (res && res.error) throw new Error(res.error);
+    notify('Entry deleted.');
+    await loadData();
+  } catch (e) {
+    showError('Delete failed: ' + e.message);
+    showSpinner(false);
+  }
+}
 
+// ── ADD KID ──────────────────────────────────────────────────
+let selectedColor = 'green';
 function selectColor(el) {
   document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
   el.classList.add('selected');
   selectedColor = el.dataset.color;
 }
-
 function openAddKid() { document.getElementById('add-kid-modal').classList.add('open'); }
 function closeAddKid() { document.getElementById('add-kid-modal').classList.remove('open'); }
 
@@ -801,7 +1083,7 @@ async function submitAddKid() {
   showSpinner(true);
   try {
     const res = await api({ action: 'addKid', name, color: selectedColor });
-    if (res.error) throw new Error(res.error);
+    if (res && res.error) throw new Error(res.error);
     closeAddKid();
     document.getElementById('new-kid-name').value = '';
     playFanfare();
@@ -809,117 +1091,195 @@ async function submitAddKid() {
     await loadData();
   } catch (e) {
     showError(e.message);
-  } finally {
-    showSpinner(false);
-  }
+  } finally { showSpinner(false); }
 }
 
-// ── SET GOAL ───────────────────────────────────────────────
+async function removeKid(kid) {
+  if (!confirm(`Remove ${kid.name} from the treasury? Their transaction history will remain in the log.`)) return;
+  showSpinner(true);
+  try {
+    const res = await api({ action: 'deleteKid', name: kid.name });
+    if (res && res.error) throw new Error(res.error);
+    if (selectedKid && selectedKid.name === kid.name) { selectedKid = null; }
+    notify(`${kid.name} left the adventure.`);
+    await loadData();
+  } catch (e) {
+    showError(e.message);
+  } finally { showSpinner(false); }
+}
+
+// ── QUEST / GOAL ─────────────────────────────────────────────
 function openGoal() {
-  if (!selectedKid) { showError('Select a hero first!'); return; }
-  if (selectedKid.goal) {
-    document.getElementById('goal-name').value = selectedKid.goalName || '';
-    document.getElementById('goal-amount').value = selectedKid.goal || '';
-  }
+  if (!selectedKid || isKidMode) return;
+  document.getElementById('goal-name').value    = selectedKid.goalName || '';
+  document.getElementById('goal-amount').value  = selectedKid.goal || '';
+  document.getElementById('goal-modal-title').textContent = selectedKid.goal > 0 ? '🗡 EDIT QUEST' : '🗡 SET QUEST';
+  document.getElementById('btn-clear-goal').style.display = selectedKid.goal > 0 ? '' : 'none';
   document.getElementById('goal-modal').classList.add('open');
 }
 function closeGoal() { document.getElementById('goal-modal').classList.remove('open'); }
 
 async function submitGoal() {
   const goalName = document.getElementById('goal-name').value.trim();
-  const goal = parseFloat(document.getElementById('goal-amount').value);
+  const goal     = parseFloat(document.getElementById('goal-amount').value);
   if (!goal || goal <= 0) { showError('Enter a valid goal amount.'); return; }
   showSpinner(true);
   try {
     const res = await api({ action: 'setGoal', name: selectedKid.name, goal, goalName });
-    if (res.error) throw new Error(res.error);
+    if (res && res.error) throw new Error(res.error);
     closeGoal();
-    notify(`Goal set: ${goalName} ($${goal})`);
+    notify(`Quest set: ${goalName || 'Savings goal'} ($${goal})`);
     await loadData();
   } catch (e) {
     showError(e.message);
-  } finally {
-    showSpinner(false);
+  } finally { showSpinner(false); }
+}
+
+async function clearGoal() {
+  if (!selectedKid) return;
+  closeGoal();
+  showSpinner(true);
+  try {
+    const res = await api({ action: 'setGoal', name: selectedKid.name, goal: 0, goalName: '' });
+    if (res && res.error) throw new Error(res.error);
+    notify('Quest cleared.');
+    await loadData();
+  } catch (e) {
+    showError(e.message);
+  } finally { showSpinner(false); }
+}
+
+// ── CONTRIBUTE ───────────────────────────────────────────────
+function openContribute() {
+  const sel = document.getElementById('contribute-kid');
+  sel.innerHTML = '<option value="">— Choose Hero —</option>';
+  kids.forEach(k => {
+    const opt = document.createElement('option');
+    opt.value       = k.name;
+    opt.textContent = k.name;
+    sel.appendChild(opt);
+  });
+  document.getElementById('contribute-amount').value      = '';
+  document.getElementById('contribute-goal-info').style.display = 'none';
+  document.getElementById('btn-remaining').style.display        = 'none';
+  document.getElementById('contribute-modal').classList.add('open');
+}
+function closeContribute() { document.getElementById('contribute-modal').classList.remove('open'); }
+
+function onContributeKidChange() {
+  const kidName = document.getElementById('contribute-kid').value;
+  const kid     = kids.find(k => k.name === kidName);
+  const info    = document.getElementById('contribute-goal-info');
+  const btnRem  = document.getElementById('btn-remaining');
+  if (kid && kid.goal > 0) {
+    const remaining = Math.max(kid.goal - kid.balance, 0);
+    info.textContent    = `Quest: ${kid.goalName || 'Savings Goal'} · $${kid.balance.toFixed(2)} / $${kid.goal.toFixed(2)} · $${remaining.toFixed(2)} remaining`;
+    info.style.display  = 'block';
+    btnRem.style.display   = '';
+    btnRem.textContent  = `Remaining ($${remaining.toFixed(2)})`;
+    btnRem.dataset.remaining = remaining;
+  } else {
+    info.style.display  = 'none';
+    btnRem.style.display   = 'none';
   }
 }
-
-// ── SETUP ──────────────────────────────────────────────────
-function openSetup() {
-  document.getElementById('script-url-input').value = scriptUrl;
-  document.getElementById('setup-modal').classList.add('open');
-}
-function closeSetup() { document.getElementById('setup-modal').classList.remove('open'); }
-
-function saveSetup() {
-  const url = document.getElementById('script-url-input').value.trim();
-  if (!url) { showError('Paste your Apps Script URL.'); return; }
-  scriptUrl = url;
-  localStorage.setItem('zelda_allowance_script_url', url);
-  closeSetup();
-  loadData();
+function setContributeAmount(amt) { document.getElementById('contribute-amount').value = amt; }
+function setContributeRemaining() {
+  const btn = document.getElementById('btn-remaining');
+  document.getElementById('contribute-amount').value = (parseFloat(btn.dataset.remaining) || 0).toFixed(2);
 }
 
-// ── SOUND (Web Audio API) ──────────────────────────────────
+function preparePaypal() {
+  const kidName = document.getElementById('contribute-kid').value;
+  const amount  = parseFloat(document.getElementById('contribute-amount').value);
+  if (!kidName) { showError('Select a hero first!'); return; }
+
+  const form    = document.createElement('form');
+  form.method   = 'post';
+  form.action   = 'https://www.paypal.com/donate';
+  form.target   = '_blank';
+
+  const fields  = {
+    business:      PAYPAL_EMAIL,
+    item_name:     `Hyrulean Treasury - ${kidName}`,
+    currency_code: 'USD',
+    no_note:       '0',
+    no_shipping:   '1',
+    return:        window.location.href,
+  };
+  if (amount && amount > 0) fields.amount = amount.toFixed(2);
+
+  Object.entries(fields).forEach(([name, value]) => {
+    const input = document.createElement('input');
+    input.type  = 'hidden';
+    input.name  = name;
+    input.value = value;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+  closeContribute();
+  notify(`Opening PayPal for ${kidName}...`);
+}
+
+// ── SOUND ────────────────────────────────────────────────────
 function note(ctx, freq, start, dur, vol = 0.3) {
-  const osc = ctx.createOscillator();
+  const osc  = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.connect(gain);
   gain.connect(ctx.destination);
-  osc.type = 'square';
+  osc.type  = 'square';
   osc.frequency.value = freq;
   gain.gain.setValueAtTime(vol, start);
   gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
   osc.start(start);
   osc.stop(start + dur + 0.01);
 }
-
 function playEarn() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    note(ctx, 784, ctx.currentTime,       0.1);  // G5
-    note(ctx, 1047, ctx.currentTime + 0.12, 0.15); // C6
+    note(ctx, 784,  ctx.currentTime,        0.1);
+    note(ctx, 1047, ctx.currentTime + 0.12, 0.15);
   } catch {}
 }
-
 function playSpend() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    note(ctx, 523, ctx.currentTime,       0.1);  // C5
-    note(ctx, 392, ctx.currentTime + 0.12, 0.15); // G4
+    note(ctx, 523, ctx.currentTime,        0.1);
+    note(ctx, 392, ctx.currentTime + 0.12, 0.15);
   } catch {}
 }
-
 function playFanfare() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const t = ctx.currentTime;
-    const melody = [523, 659, 784, 1047];
-    melody.forEach((f, i) => note(ctx, f, t + i * 0.12, 0.12));
+    const t   = ctx.currentTime;
+    [523, 659, 784, 1047].forEach((f, i) => note(ctx, f, t + i * 0.12, 0.12));
   } catch {}
 }
 
-// ── NOTIFICATION ───────────────────────────────────────────
+// ── NOTIFICATION ─────────────────────────────────────────────
 let notifTimer;
 function notify(msg) {
   const el = document.getElementById('notif');
-  el.textContent = '▼ ' + msg;
+  el.textContent       = '▼ ' + msg;
+  el.style.borderColor = '';
+  el.style.color       = '';
   el.classList.add('show');
   clearTimeout(notifTimer);
   notifTimer = setTimeout(() => el.classList.remove('show'), 3000);
 }
-
-// ── HELPERS ────────────────────────────────────────────────
-function showSpinner(on) {
-  document.getElementById('spinner').classList.toggle('visible', on);
-}
 function showError(msg) {
-  const el = document.getElementById('error-banner');
-  el.textContent = '✗ ' + msg;
-  el.classList.add('visible');
+  const el = document.getElementById('notif');
+  el.textContent       = '✗ ' + msg;
+  el.style.borderColor = '#e74c3c';
+  el.style.color       = '#e74c3c';
+  el.classList.add('show');
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(() => { el.classList.remove('show'); el.style.borderColor = ''; el.style.color = ''; }, 4000);
 }
-function hideError() {
-  document.getElementById('error-banner').classList.remove('visible');
-}
+function showSpinner(on) { document.getElementById('spinner').classList.toggle('visible', on); }
 function escHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
