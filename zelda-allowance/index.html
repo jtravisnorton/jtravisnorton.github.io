@@ -836,13 +836,18 @@ input, select, textarea {
 
 <script>
 // ── STATE ──────────────────────────────────────────────────
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsMclqgQw3jTkw7F6g7NoHtcuvMM5pBU8rSwnDLgeC75he34z6G0RIEYt3Ku1eLnHhbA/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7MkdW-EFXTAx6zPUFBF3vB0ZReunlVf4Y81n0O9fAtyMq4ogsEuweRmF0mgLiA2Femg/exec';
+const OLD_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsMclqgQw3jTkw7F6g7NoHtcuvMM5pBU8rSwnDLgeC75he34z6G0RIEYt3Ku1eLnHhbA/exec';
+// Clear stale cached URL if it's the old deployment
+if (localStorage.getItem('zelda_allowance_script_url') === OLD_SCRIPT_URL) {
+  localStorage.removeItem('zelda_allowance_script_url');
+}
 let scriptUrl = localStorage.getItem('zelda_allowance_script_url') || DEFAULT_SCRIPT_URL;
 let kids = [];
 let transactions = [];
 let selectedKid = null;
 let txMode = 'earn'; // 'earn' | 'spend'
-let locked = true;
+let locked = localStorage.getItem('zelda_locked') === 'true';
 let parentPin = localStorage.getItem('zelda_pin') || '1234';
 
 const RUPEE_VALUES = [
@@ -919,7 +924,7 @@ function renderKids() {
   // Re-select if one was selected
   if (selectedKid) {
     const still = kids.find(k => k.name === selectedKid.name);
-    if (still) { selectedKid = still; updateTxPanel(); }
+    if (still) { selectedKid = still; }
   }
 }
 
@@ -1395,6 +1400,7 @@ function toggleLock() {
     document.getElementById('pin-modal').classList.add('open');
   } else {
     locked = true;
+    localStorage.setItem('zelda_locked', 'true');
     applyLock();
   }
 }
@@ -1403,6 +1409,7 @@ function submitPin() {
   const entered = document.getElementById('pin-input').value;
   if (entered === parentPin) {
     locked = false;
+    localStorage.setItem('zelda_locked', 'false');
     applyLock();
     document.getElementById('pin-modal').classList.remove('open');
   } else {
